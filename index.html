@@ -51,7 +51,7 @@
             display: flex;
             align-items: start;
             justify-content: center;
-            font-size: 9px;
+            font-size: 8px;
             font-weight: bold;
         }
 
@@ -209,7 +209,7 @@
                     // Create div with notes
                     const noteDiv = document.createElement('div');
                     noteDiv.className = 'note';
-                    let width = parseFloat(duration) * 120;
+                    let width = parseFloat(duration) * 250;
                     noteDiv.style.width = `${width}px`;
                     noteDiv.style.backgroundColor = getColor(note) || '#ffffff';
                     noteDiv.textContent = `${note}(${duration})`;
@@ -233,29 +233,27 @@
 
 <body>
     <h2>Music Notation Parser</h2>
-    <div style="display: flex; justify-content: space-between; width: 100%; gap: 2em;">
-        <div style="display: flex; flex-direction: column;">
-            <div style="width: 100%;">
-                <h2>Music Notation</h2>
-                <textarea id="inputText" placeholder="Enter your musical notation here..."></textarea>
-            </div>
-            <button onclick="parseNotes()">Parse Notes</button>
-
-            <div style="width: 100%;">
-                <h3>Parsed Result:</h3>
-                <pre id="result" style="height: 20em; overflow: scroll;"></pre>
-            </div>
-        </div>
-        <div>
+    <div style="display: flex;">
+        <div style="width: 100%;">
             <h3>Visual Representation (with notes):</h3>
             <div id="visualResult" style="height: 40em; overflow: scroll; width: 100%;"></div>
         </div>
+        <div style="width: 70%; display: flex; flex-direction: column; padding: 1em;">
+            <h2>Music Notation</h2>
+            <textarea id="inputText" placeholder="Enter your musical notation here..."></textarea>
+            <div> <button onclick="parseNotes()">Parse Notes</button></div>
+        </div>
+    </div>
+    <div style="display: flex; justify-content: space-between;">
         <div>
             <h3>Visual Representation (without notes):</h3>
             <div id="visualResultNoNotes" style="height: 40em; overflow: scroll; width: 100%;"></div>
         </div>
+        <div style="width: 50%;">
+            <h3>Parsed Result:</h3>
+            <pre id="result" style="height: 20em; overflow: scroll;"></pre>
+        </div>
     </div>
-
     <div id="unmappedNotes"></div>
 </body>
 
