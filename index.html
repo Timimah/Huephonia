@@ -49,9 +49,10 @@
             height: 48px;
             border: 0.75pt solid #353638;
             display: flex;
-            align-items: center;
+            align-items: start;
             justify-content: center;
-            font-size: 12px;
+            font-size: 9px;
+            font-weight: bold;
         }
 
         #visualResult,
@@ -208,7 +209,7 @@
                     // Create div with notes
                     const noteDiv = document.createElement('div');
                     noteDiv.className = 'note';
-                    const width = parseFloat(duration) * 48;
+                    let width = parseFloat(duration) * 120;
                     noteDiv.style.width = `${width}px`;
                     noteDiv.style.backgroundColor = getColor(note) || '#ffffff';
                     noteDiv.textContent = `${note}(${duration})`;
@@ -216,6 +217,7 @@
 
                     // Create div without notes
                     const noteDivNoNotes = document.createElement('div');
+                    width = parseFloat(duration) * 48;
                     noteDivNoNotes.className = 'note';
                     noteDivNoNotes.style.width = `${width}px`;
                     noteDivNoNotes.style.backgroundColor = getColor(note) || '#ffffff';
@@ -232,26 +234,29 @@
 <body>
     <h2>Music Notation Parser</h2>
     <div style="display: flex; justify-content: space-between; width: 100%; gap: 2em;">
-        <div style="width: 100%;">
-            <h2>Music Notation</h2>
-            <textarea id="inputText" placeholder="Enter your musical notation here..."></textarea>
-        </div>
-        <div style="width: 50%;">
-            <h3>Parsed Result:</h3>
-            <pre id="result" style="height: 20em; overflow: scroll;"></pre>
+        <div style="display: flex; flex-direction: column;">
+            <div style="width: 100%;">
+                <h2>Music Notation</h2>
+                <textarea id="inputText" placeholder="Enter your musical notation here..."></textarea>
+            </div>
+            <button onclick="parseNotes()">Parse Notes</button>
+
+            <div style="width: 100%;">
+                <h3>Parsed Result:</h3>
+                <pre id="result" style="height: 20em; overflow: scroll;"></pre>
+            </div>
         </div>
         <div>
             <h3>Visual Representation (with notes):</h3>
-            <div id="visualResult" style="height: 20em; overflow: scroll; width: 100%;"></div>
+            <div id="visualResult" style="height: 40em; overflow: scroll; width: 100%;"></div>
         </div>
         <div>
             <h3>Visual Representation (without notes):</h3>
-            <div id="visualResultNoNotes" style="height: 20em; overflow: scroll; width: 100%;"></div>
+            <div id="visualResultNoNotes" style="height: 40em; overflow: scroll; width: 100%;"></div>
         </div>
     </div>
 
     <div id="unmappedNotes"></div>
-    <button onclick="parseNotes()">Parse Notes</button>
 </body>
 
 </html>
