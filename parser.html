@@ -167,78 +167,78 @@
         }
 
         function downloadSVG(withNotes) {
-        const code = document.getElementById('defaultCode').innerText;
-        const parsedCode = parseCode(code);
+            const code = document.getElementById('defaultCode').innerText;
+            const parsedCode = parseCode(code);
 
-        let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="${parsedCode.length * 72}">`;
-        svg += `<rect width="100%" height="100%" fill="white"/>`;
+            let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="${parsedCode.length * 72}">`;
+            svg += `<rect width="100%" height="100%" fill="white"/>`;
 
-        parsedCode.forEach((line, lineIndex) => {
-            let xOffset = 0;
-            const yOffset = lineIndex * (48 + 24);
+            parsedCode.forEach((line, lineIndex) => {
+                let xOffset = 0;
+                const yOffset = lineIndex * (48 + 24);
 
-            line.forEach(w => {
-                if (withNotes) {
+                line.forEach(w => {
+                    if (withNotes) {
+                        // Draw text in SVG
+                        svg += `<text x="${xOffset + w.width / 2}" y="${yOffset + 12}" font-family="Garamond" font-size="6" fill="black" text-anchor="middle">${w.note}</text>`;
+                        svg += `<text x="${xOffset + w.width / 2}" y="${yOffset + 22}" font-family="Garamond" font-size="6" fill="black" text-anchor="middle">${w.value}</text>`;
+                    }
+
+                    // Draw rectangle
+                    svg += `<rect x="${xOffset}" y="${yOffset + (withNotes ? 24 : 0)}" width="${w.width}" height="48" fill="#${w.color}" stroke="#353638" stroke-width="0.75"/>`;
+                    xOffset += w.width;
+                });
+            });
+
+            svg += '</svg>';
+
+            const blob = new Blob([svg], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = withNotes ? 'art_with_notes.svg' : 'art_without_notes.svg';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function downloadSVG() {
+
+            const code = document.getElementById('defaultCode').innerText;
+            const parsedCode = parseCode(code);
+
+            let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="${parsedCode.length * 72}">`;
+            svg += `<rect width="100%" height="100%" style="padding: 1em;" fill="white"/>`;
+
+            parsedCode.forEach((line, lineIndex) => {
+                let xOffset = 0;
+                const yOffset = lineIndex * (48 + 24);
+
+                line.forEach(w => {
                     // Draw text in SVG
                     svg += `<text x="${xOffset + w.width / 2}" y="${yOffset + 12}" font-family="Garamond" font-size="6" fill="black" text-anchor="middle">${w.note}</text>`;
                     svg += `<text x="${xOffset + w.width / 2}" y="${yOffset + 22}" font-family="Garamond" font-size="6" fill="black" text-anchor="middle">${w.value}</text>`;
-                }
-                
-                // Draw rectangle
-                svg += `<rect x="${xOffset}" y="${yOffset + (withNotes ? 24 : 0)}" width="${w.width}" height="48" fill="#${w.color}" stroke="#353638" stroke-width="0.75"/>`;
-                xOffset += w.width;
+
+                    // Draw rectangle
+                    svg += `<rect x="${xOffset}" y="${yOffset + 24}" width="${w.width}" height="48" fill="#${w.color}" stroke="#353638" stroke-width="0.75"/>`;
+
+                    xOffset += w.width;
+                });
             });
-        });
 
-        svg += '</svg>';
+            svg += '</svg>';
 
-        const blob = new Blob([svg], { type: 'image/svg+xml' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = withNotes ? 'art_with_notes.svg' : 'art_without_notes.svg';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    }
-
-        // function downloadSVG() {
-    
-        //     const code = document.getElementById('defaultCode').innerText;
-        //     const parsedCode = parseCode(code);
-
-        //     let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="${parsedCode.length * 72}">`;
-        //     svg += `<rect width="100%" height="100%" style="padding: 1em;" fill="white"/>`;
-
-        //     parsedCode.forEach((line, lineIndex) => {
-        //         let xOffset = 0;
-        //         const yOffset = lineIndex * (48 + 24);
-
-        //         line.forEach(w => {
-        //             // Draw text in SVG
-        //             svg += `<text x="${xOffset + w.width / 2}" y="${yOffset + 12}" font-family="Garamond" font-size="6" fill="black" text-anchor="middle">${w.note}</text>`;
-        //             svg += `<text x="${xOffset + w.width / 2}" y="${yOffset + 22}" font-family="Garamond" font-size="6" fill="black" text-anchor="middle">${w.value}</text>`;
-
-        //             // Draw rectangle
-        //             svg += `<rect x="${xOffset}" y="${yOffset + 24}" width="${w.width}" height="48" fill="#${w.color}" stroke="#353638" stroke-width="0.75"/>`;
-
-        //             xOffset += w.width;
-        //         });
-        //     });
-
-        //     svg += '</svg>';
-
-        //     const blob = new Blob([svg], { type: 'image/svg+xml' });
-        //     const url = URL.createObjectURL(blob);
-        //     const a = document.createElement('a');
-        //     a.href = url;
-        //     a.download = 'art.svg';
-        //     document.body.appendChild(a);
-        //     a.click();
-        //     document.body.removeChild(a);
-        //     URL.revokeObjectURL(url);
-        // }
+            const blob = new Blob([svg], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'art.svg';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
     </script>
 </head>
 
@@ -261,26 +261,26 @@
             <input type="file" accept=".pdf,.doc,.docx" onchange="displayDocument(event)">
             <button onclick="generateArt();generateArtWithoutNotes()">Generate Art</button>
             <button onclick="downloadSVG(true)">Download SVG with Notes</button>
-<button onclick="downloadSVG(false)">Download SVG without Notes</button>
+            <button onclick="downloadSVG(false)">Download SVG without Notes</button>
         </div>
 
         <div id="defaultCode">
             R(1.5) R(.75) E(.25) E(.25) E(.25)
-E(1) E(.25) E(.25) E(.5) F(.25) Ab(.5) Bb(.25)
-Bb(1) R(.25) E(.25) E(.25) F(.75) Ab(.25) Bb(.25)
-Bb(1) R(.25) E(.25) Cp(.5) Bb(.5) Ab(.25) Ab(.25)
-Ab(.25) F(.25) E(.5) R(.5) R(1) E(.25) E(.25)
-E(.5) C(1) E(.25) F(.75) Ab(.25) Bb(.25)
-Bb(1) R(.25) E(.25) E(.25) F(.75) Ab(.25) Bb(.25)
-Bb(1) R(.25) Ab(.25) Cp(.5) Bb(.25) Ab(.5) Ab(.25)
-Ab(1.5) R(1) R(.25) Cp(.25)
-Ebp(.5) Dbp(.5) Cp(.25) Cp(.25) Cp(1) Ab(.5)
-Ebp(.5) Dbp(.5) Cp(.25) Cp(.25) Cp(1) Ab(.25) Ab(.25)
-Ebp(.25) Dbp(.5) Cp(.5) Cp(.25) Cp(.5) Bb(.25) Ab(.75)
-Cp(.5) Dbp(.5) Cp(.25) Bb(.25)
-Bb(1.5) R(1.5)
+            E(1) E(.25) E(.25) E(.5) F(.25) Ab(.5) Bb(.25)
+            Bb(1) R(.25) E(.25) E(.25) F(.75) Ab(.25) Bb(.25)
+            Bb(1) R(.25) E(.25) Cp(.5) Bb(.5) Ab(.25) Ab(.25)
+            Ab(.25) F(.25) E(.5) R(.5) R(1) E(.25) E(.25)
+            E(.5) C(1) E(.25) F(.75) Ab(.25) Bb(.25)
+            Bb(1) R(.25) E(.25) E(.25) F(.75) Ab(.25) Bb(.25)
+            Bb(1) R(.25) Ab(.25) Cp(.5) Bb(.25) Ab(.5) Ab(.25)
+            Ab(1.5) R(1) R(.25) Cp(.25)
+            Ebp(.5) Dbp(.5) Cp(.25) Cp(.25) Cp(1) Ab(.5)
+            Ebp(.5) Dbp(.5) Cp(.25) Cp(.25) Cp(1) Ab(.25) Ab(.25)
+            Ebp(.25) Dbp(.5) Cp(.5) Cp(.25) Cp(.5) Bb(.25) Ab(.75)
+            Cp(.5) Dbp(.5) Cp(.25) Bb(.25)
+            Bb(1.5) R(1.5)
 
-<!-- Ebp(1.5) Cp(1) Ebp(.25) Dbp(.25)
+            <!-- Ebp(1.5) Cp(1) Ebp(.25) Dbp(.25)
 Dbp(.5) Cp(.25) Bb(.5) Bb(.25) Ab(1) Ab(.25) F(.25)
 F(.25) Ab(.25) Ab(1) Ab(.25) Bb(.75) Cp(.25) Bb(.25)
 Bb(1.5) R(1.5)
@@ -298,7 +298,7 @@ Dbp(.5) Cp(.25) Bb(.5) Bb(.25) Ab(1) R(.25) E(.25)
 F(.25) Ab(.75) Cp(.5) Bb(.5) Ab(.25) Ab(.5) Ab(.25)
 Ab(3) -->
 
-<!-- R(1.5) R(.5) F(.5) F(.25) E(.25) 
+            <!-- R(1.5) R(.5) F(.5) F(.25) E(.25) 
 E(1) R(.25) E(.25) E(.5) F(.25) Ab(.5) Bb(.25)
 Bb(1.5) E(.5) F(.25) Ab(.5) Bb(.25)
 Bb(1) R(.25) E(.25) Cp(.5) Bb(.5) Ab(.25) Ab(.25)

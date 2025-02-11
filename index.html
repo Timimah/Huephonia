@@ -132,13 +132,53 @@
             'Bp': '#ff99c9'
         };
 
-        // Create case-insensitive color map
         const caseInsensitiveColorMap = Object.fromEntries(
             Object.entries(colorMap).map(([key, value]) => [key.toLowerCase(), value])
         );
 
         function getColor(note) {
             return caseInsensitiveColorMap[note.toLowerCase()];
+        }
+
+        function downloadSVG() {
+            const visualResultNoNotes = document.getElementById('visualResultNoNotes');
+            const lines = visualResultNoNotes.getElementsByClassName('line-container');
+
+            let maxWidth = 0;
+            Array.from(lines).forEach(line => {
+                const lineWidth = Array.from(line.children).reduce((sum, note) => sum + note.offsetWidth, 0);
+                maxWidth = Math.max(maxWidth, lineWidth);
+            });
+
+            const height = lines.length * 60; // 48px height + 12px margin
+
+            let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${maxWidth}" height="${height}" style="padding: 2em;">`;
+
+            Array.from(lines).forEach((line, lineIndex) => {
+                let xOffset = 0;
+                Array.from(line.children).forEach(note => {
+                    const width = note.offsetWidth;
+                    const y = lineIndex * 60;
+                    const color = note.style.backgroundColor;
+
+                    svg += `<rect x="${xOffset}" y="${y}" width="${width}" height="48" 
+                           fill="${color}" stroke="#353638" stroke-width="0.75"/>`;
+
+                    xOffset += width;
+                });
+            });
+
+            svg += '</svg>';
+
+            const blob = new Blob([svg], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'music_notation.svg';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
 
         function parseNotes() {
@@ -148,19 +188,15 @@
             const visualResultNoNotes = document.getElementById('visualResultNoNotes');
             const unmappedNotesDiv = document.getElementById('unmappedNotes');
 
-            // Clear previous results
             visualResult.innerHTML = '';
             visualResultNoNotes.innerHTML = '';
             unmappedNotesDiv.innerHTML = '';
 
-            // Set to store unique unmapped notes
             const unmappedNotes = new Set();
 
-            // Remove starting and ending curly braces and split by newlines
             const cleanText = input.trim().replace(/^\{|\}$/g, '');
             const lines = cleanText.split('\n');
 
-            // Parse each line and collect unmapped notes
             let result = lines.map(line => {
                 const notePattern = /([A-Za-z]+(?:b|p)?)(?:\((\d*\.?\d+)\))/g;
                 const matches = [];
@@ -177,13 +213,10 @@
                 return matches;
             });
 
-            // Remove empty arrays
             result = result.filter(line => line.length > 0);
 
-            // Display the parsed result
             resultDiv.textContent = JSON.stringify(result, null, 2);
 
-            // Display unmapped notes if any
             if (unmappedNotes.size > 0) {
                 unmappedNotesDiv.innerHTML = `
                     <h3>Notes without color mappings:</h3>
@@ -193,20 +226,16 @@
                 `;
             }
 
-            // Create visual representations
             result.forEach(line => {
-                // With notes
                 const lineContainer = document.createElement('div');
                 lineContainer.className = 'line-container';
 
-                // Without notes
                 const lineContainerNoNotes = document.createElement('div');
                 lineContainerNoNotes.className = 'line-container';
 
                 line.forEach(noteStr => {
                     const [_, note, duration] = noteStr.match(/([A-Za-z]+(?:b|p)?)(?:\((\d*\.?\d+)\))/);
 
-                    // Create div with notes
                     const noteDiv = document.createElement('div');
                     noteDiv.className = 'note';
                     let width = parseFloat(duration) * 250;
@@ -215,7 +244,6 @@
                     noteDiv.textContent = `${note}(${duration})`;
                     lineContainer.appendChild(noteDiv);
 
-                    // Create div without notes
                     const noteDivNoNotes = document.createElement('div');
                     width = parseFloat(duration) * 48;
                     noteDivNoNotes.className = 'note';
@@ -252,6 +280,7 @@
         <div style="width: 50%;">
             <h3>Parsed Result:</h3>
             <pre id="result" style="height: 20em; overflow: scroll;"></pre>
+            <div> <button onclick="downloadSVG()">Download SVG</button></div>
         </div>
     </div>
     <div id="unmappedNotes"></div>
