@@ -261,26 +261,24 @@
 
 <body>
     <h2>Music Notation Parser</h2>
-    <div style="display: flex; flex-wrap: wrap; justify-content: space-evenly;">
-        <div>
-            <h3>Visual Representation (with notes):</h3>
-            <div id="visualResult" style="height: 40em; overflow: scroll; width: 100%;"></div>
-        </div>
-        <div style="display: flex; flex-direction: column; padding: 1em;">
-            <h2>Music Notation</h2>
-            <textarea id="inputText" placeholder="Enter your musical notation here..."></textarea>
-            <div> <button onclick="parseNotes()">Parse Notes</button></div>
-        </div>
-    </div>
-    <div style="display: flex; justify-content: space-between;">
+    <div style="display: flex; justify-content: space-evenly;">
         <div>
             <h3>Visual Representation (without notes):</h3>
-            <div id="visualResultNoNotes" style="height: 40em; overflow: scroll; width: 100%;"></div>
-        </div>
-        <div style="width: 50%;">
-            <h3>Parsed Result:</h3>
-            <pre id="result" style="height: 20em; overflow: scroll;"></pre>
+            <div id="visualResultNoNotes" style="height: 30em; overflow: scroll; width: 100%;"></div>
             <div> <button onclick="downloadSVG()">Download SVG</button></div>
+        </div>
+        <div>
+            <h3>Visual Representation (with notes):</h3>
+            <div id="visualResult" style="height: 30em; overflow: scroll; width: 100%;"></div>
+        </div>
+        <div style="display: flex; flex-direction: column; padding: 1em; height: 35em; width: 40em;">
+            <h3>Music Notation</h3>
+            <textarea id="inputText" placeholder="Enter your musical notation here..." style="height: 100%;"></textarea>
+            <div>
+                <button onclick="parseNotes()">Parse Notes</button>
+            </div>
+            <h3>Parsed Result:</h3>
+            <pre id="result" style="width: 100%; overflow: scroll; height: 100%;"></pre>
         </div>
     </div>
     <div id="unmappedNotes"></div>
