@@ -256,6 +256,12 @@
                 visualResultNoNotes.appendChild(lineContainerNoNotes);
             });
         }
+
+        function clearNotes() {
+            document.getElementById("inputText").value = ""
+            document.getElementById("visualResult").innerHTML = ""
+            document.getElementById("visualResultNoNotes").innerHTML = ""
+        }
     </script>
 </head>
 
@@ -265,7 +271,9 @@
         <div>
             <h3>Visual Representation (without notes):</h3>
             <div id="visualResultNoNotes" style="height: 30em; overflow: scroll; width: 100%;"></div>
-            <div> <button onclick="downloadSVG()">Download SVG</button></div>
+            <div>
+                <button onclick="downloadSVG()">Download SVG</button>
+            </div>
         </div>
         <div>
             <h3>Visual Representation (with notes):</h3>
@@ -274,8 +282,9 @@
         <div style="display: flex; flex-direction: column; padding: 1em; height: 35em; width: 40em;">
             <h3>Music Notation</h3>
             <textarea id="inputText" placeholder="Enter your musical notation here..." style="height: 100%;"></textarea>
-            <div>
+            <div style="display: flex; justify-content: space-between;">
                 <button onclick="parseNotes()">Parse Notes</button>
+                <button onclick="clearNotes()">Clear Notes</button>
             </div>
             <h3>Parsed Result:</h3>
             <pre id="result" style="width: 100%; overflow: scroll; height: 100%;"></pre>
