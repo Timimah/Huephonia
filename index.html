@@ -2,83 +2,11 @@
 <html>
 
 <head>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 1200px;
-            margin: 20px auto;
-            padding: 0 20px;
-        }
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 
-        textarea {
-            width: 100%;
-            height: 200px;
-            padding: 10px;
-            margin-bottom: 10px;
-            font-family: monospace;
-        }
-
-        button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-right: 10px;
-        }
-
-        button:hover {
-            background-color: #45a049;
-        }
-
-        pre {
-            background-color: #f5f5f5;
-            padding: 15px;
-            border-radius: 4px;
-            overflow-x: auto;
-            white-space: pre-wrap;
-        }
-
-        .line-container {
-            display: flex;
-            margin-bottom: 12px;
-        }
-
-        .note {
-            height: 48px;
-            border: 0.75pt solid #353638;
-            display: flex;
-            align-items: start;
-            justify-content: center;
-            font-size: 7px;
-            font-weight: bold;
-        }
-
-        #visualResult,
-        #visualResultNoNotes {
-            margin-top: 20px;
-        }
-
-        #unmappedNotes {
-            margin-top: 20px;
-            color: red;
-        }
-
-        #unmappedNotes ul {
-            list-style-type: none;
-            padding: 0;
-        }
-
-        #unmappedNotes li {
-            margin: 5px 0;
-            padding: 5px;
-            background-color: #fff0f0;
-            border-radius: 4px;
-            display: inline-block;
-            margin-right: 10px;
-        }
-    </style>
     <script>
         const colorMap = {
             'R': '#f2f2f2',
@@ -264,34 +192,50 @@
             document.getElementById("result").innerHTML = ""
         }
     </script>
+    <title>Hue Gen</title>
 </head>
 
 <body>
-    <h2>Music Notation Parser</h2>
-    <div style="display: flex; justify-content: space-evenly;">
-        <div>
-            <h3>Visual Representation (without notes):</h3>
-            <div id="visualResultNoNotes" style="height: 30em; overflow: scroll; width: 100%;"></div>
-            <div>
-                <button onclick="downloadSVG()">Download SVG</button>
+    <div class="header">
+        <p>Hue Gen</p>
+    </div>
+    <div class="container">
+        <div class="notation">
+            <div class="music-notation">
+                <label for="music-notation">Music Notation</label>
+                <textarea id="inputText" placeholder="Enter music notation here..."></textarea>
+                <div style="display: flex;">
+                    <button onclick="parseNotes()" style="width: 50%; background-color: #8a4af3;">Parse</button>
+                </div>
+            </div>
+            <div class="parsed-note">
+                <label for="parsed-note">Parsed Note</label>
+                <pre id="result" placeholder="Parsed notes"></pre>
             </div>
         </div>
-        <div>
-            <h3>Visual Representation (with notes):</h3>
-            <div id="visualResult" style="height: 30em; overflow: scroll; width: 100%;"></div>
-        </div>
-        <div style="display: flex; flex-direction: column; padding: 1em; height: 35em; width: 40em;">
-            <h3>Music Notation</h3>
-            <textarea id="inputText" placeholder="Enter your musical notation here..." style="height: 100%;"></textarea>
-            <div style="display: flex; justify-content: space-between;">
-                <button onclick="parseNotes()">Parse Notes</button>
-                <button onclick="clearNotes()">Clear Notes</button>
+        <div style="position: relative;">
+            <label for="visualResultNoNotes">Hues</label>
+            <div class="hues">
+                <div id="visualResultNoNotes"></div>
             </div>
-            <h3>Parsed Result:</h3>
-            <pre id="result" style="width: 100%; overflow: scroll; height: 100%;"></pre>
+        </div>
+        <div style="position: relative;">
+            <label for="visualResult">Hues with Notes</label>
+            <div class="hues-with-no-notes">
+                <div id="visualResult"></div>
+            </div>
         </div>
     </div>
-    <div id="unmappedNotes"></div>
+    <div class="button">
+        <button onclick="downloadSVG()" style="width: 20%; background-color: #8a4af3;">Download SVG</button>
+        <button onclick="clearNotes()" style="width: 20%; background-color: #d9d9d9; color: black;">Clear Notes</button>
+        <div id="unmappedNotes"></div>
+    </div>
+    <!-- <div class="overlay">
+        
+        
+        
+    </div> -->
 </body>
 
 </html>

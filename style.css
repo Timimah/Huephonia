@@ -1,0 +1,207 @@
+body {
+    font-family: "Space Mono", serif;
+    font-style: normal;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    gap: 2em;
+}
+
+.space-mono-regular {
+    font-family: "Space Mono", serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+.space-mono-bold {
+    font-family: "Space Mono", serif;
+    font-weight: 700;
+    font-style: normal;
+}
+
+textarea {
+    font-family: "Space Mono", serif;
+    border: 0.15em solid #d9d9d9;
+    border-radius: 1em;
+    overflow: auto;
+    padding: 1em;
+    box-shadow: #d9d9d9;
+}
+
+button {
+    border: none;
+    border-radius: 0.4em;
+    cursor: pointer;
+    padding: 1.2em;
+    box-shadow: #d9d9d9;
+    font-family: "Space Mono", serif;
+    font-size: medium;
+    font-weight: bold;
+    color: white;
+}
+
+pre {
+    overflow: auto;
+    white-space: pre-wrap;
+    border: 0.15em solid #d9d9d9;
+    box-shadow: #d9d9d9;
+    padding: 1em;
+}
+
+label {
+    font-weight: bold;
+    font-size: x-large;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    overflow: scroll;
+    display: flex;
+    flex-direction: column;
+    background: lime;
+}
+
+.header {
+    border-bottom: 0.15em solid #d9d9d9;
+    padding-left: 2em;
+}
+
+.header p {
+    color: #b347f5;
+    font-size: xx-large;
+    font-weight: bolder;
+}
+
+.container {
+    position: relative;
+    display: grid;
+    grid-gap: 2em 2em;
+    grid-template-columns: 1fr 0.75fr 1.5fr;
+    /* Adjusted to make hues half the width of hues-with-notes */
+    gap: 2em;
+    height: 100%;
+    padding: 2em;
+}
+
+.notation {
+    display: grid;
+    grid-gap: 2em 2em;
+    grid-template-rows: auto auto;
+    position: relative;
+    /* min-height: 100%; */
+}
+
+.music-notation {
+    padding-left: 2em;
+    padding-right: 2em;
+    width: inherit;
+    height: inherit;
+    display: flex;
+    flex-direction: column;
+    /* gap: 1em; */
+    position: relative;
+}
+
+.music-notation textarea {
+    margin: 0;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    border-radius: 1em;
+    height: 20em;
+    background-color: transparent;
+}
+
+.parsed-note {
+    height: inherit;
+    padding-left: 2em;
+    padding-right: 2em;
+    position: relative;
+    /* Ensure consistent height */
+}
+
+.parsed-note pre {
+    margin: 0;
+    margin-top: 1em;
+    border: 0.15em solid #d9d9d9;
+    border-radius: 1em;
+    height: 20em;
+    background-color: #d9d9d9;
+}
+
+.line-container {
+    display: flex;
+    margin-bottom: 12px;
+    min-width: min-content;
+}
+
+.note {
+    height: 48px;
+    border: 0.75pt solid #353638;
+    display: flex;
+    align-items: start;
+    justify-content: center;
+    font-size: 7px;
+    font-weight: bold;
+}
+
+.button {
+    display: flex;
+    justify-content: center;
+    gap: 2em;
+    margin-bottom: 2em;
+}
+
+.hues,
+.hues-with-no-notes {
+    overflow: auto;
+    height: 45em;
+    padding: 2em;
+    border: 0.15em solid #d9d9d9;
+    margin-top: 1em;
+    border-radius: 1em;
+}
+
+#visualResult,
+#visualResultNoNotes {
+    width: 100%;
+}
+
+.hues>div,
+.hues-with-nonotes>div {
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+}
+
+.hues>div::-webkit-scrollbar,
+.hues-with-nonotes>div::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari and Opera */
+}
+
+#unmappedNotes {
+    margin-top: 20px;
+    color: red;
+}
+
+#unmappedNotes ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+#unmappedNotes li {
+    margin: 5px 0;
+    padding: 5px;
+    background-color: #fff0f0;
+    border-radius: 4px;
+    display: inline-block;
+    margin-right: 10px;
+}
