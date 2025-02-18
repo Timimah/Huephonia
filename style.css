@@ -225,22 +225,37 @@ p {
     padding: 1em;
 }
 
-.title-container {
+.button button {
+    width: 20%;
+}
+
+.page-description {
+    display: flex;
+    justify-content: start;
+    gap: 2em;
+    padding: 0 4em;
+}
+
+.title-container,
+.artist-container {
     text-align: center;
     margin: 20px 0;
     position: relative;
     display: inline-flex;
+    gap: 1em;
     align-items: center;
 }
 
-.title-wrapper {
-    width: 100%;
+.title-wrapper,
+.artist-wrapper {
+    /* width: 100%; */
     display: flex;
     justify-content: center;
 }
 
-.title {
-    font-size: x-large;
+.title,
+.artist {
+    font-size: large;
     font-weight: bolder;
     background-color: black;
     color: white;
@@ -250,12 +265,14 @@ p {
     border: 3pt solid transparent;
 }
 
-.title:hover {
+.title:hover,
+.artist:hover {
     border: 3pt solid #000000;
 }
 
-.title-input {
-    font-size: x-large;
+.title-input,
+.artist-input {
+    font-size: large;
     font-weight: bold;
     font-family: "Space Mono", serif;
     border: 3pt solid #000000;
@@ -295,6 +312,11 @@ p {
     white-space: nowrap;
 }
 
+.title:hover+.tooltip,
+.artist:hover+.tooltip {
+    visibility: visible;
+}
+
 .title:hover+.tooltip {
     visibility: visible;
 }
@@ -309,4 +331,107 @@ p {
 .footer p {
     font-size: x-small;
     font-weight: lighter;
+}
+
+
+/* Add these media queries at the end of your CSS */
+@media screen and (max-width: 768px) {
+    body {
+        gap: 1em;
+    }
+
+    .container {
+        display: flex;
+        flex-direction: column;
+        padding: 0 1em;
+        gap: 1em;
+    }
+
+    .notation {
+        display: flex;
+        flex-direction: row;
+        gap: 1em;
+        overflow-x: auto;
+    }
+
+    .music-notation,
+    .parsed-note {
+        min-width: 250px;
+        width: 50%;
+    }
+
+    .music-notation textarea,
+    .parsed-note pre {
+        height: 15em;
+        width: 90%;
+    }
+
+    .hues,
+    .hues-with-no-notes {
+        height: 30em;
+        padding: 1em;
+    }
+
+    .button {
+        flex-direction: column;
+        gap: 1em;
+        padding: 1em;
+        width: 100%;
+    }
+
+    .button button {
+        width: 100%;
+    }
+
+    .header {
+        padding-left: 1em;
+    }
+
+    .header p {
+        font-size: x-large;
+    }
+
+    .title {
+        font-size: large;
+    }
+
+    .title-input {
+        font-size: large;
+        width: 6em;
+    }
+
+    label {
+        font-size: medium;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .notation {
+        flex-direction: column;
+    }
+
+    .music-notation,
+    .parsed-note {
+        width: 100%;
+    }
+
+    .music-notation textarea,
+    .parsed-note pre {
+        height: 12em;
+    }
+
+    .hues,
+    .hues-with-no-notes {
+        height: 25em;
+    }
+
+    .button {
+        flex-direction: row;
+        gap: 1em;
+        padding: 1em;
+    }
+
+    .button button {
+        width: 100%;
+    }
 }
