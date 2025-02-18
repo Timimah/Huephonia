@@ -252,6 +252,54 @@ function clearNotes() {
   document.getElementById("result").innerHTML = "";
 }
 
+// function editTitle() {
+//   const titleDisplay = document.getElementById("titleDisplay");
+//   const container = document.querySelector(".title-container");
+//   const currentTitle = titleDisplay.textContent;
+
+//   // Create input element
+//   const input = document.createElement("input");
+//   input.type = "text";
+//   input.value = currentTitle;
+//   input.className = "title-input";
+
+//   // Create confirm button
+//   const confirmButton = document.createElement("button");
+//   confirmButton.className = "confirm-button";
+//   confirmButton.innerHTML = "✓";
+//   confirmButton.onclick = () => confirmEdit(input.value);
+
+//   // Replace title with input and button
+//   titleDisplay.style.display = "none";
+//   container.insertBefore(input, titleDisplay);
+//   container.insertBefore(confirmButton, titleDisplay.nextSibling);
+
+//   // Focus input
+//   input.focus();
+
+//   // Handle enter key
+//   input.addEventListener("keypress", function (e) {
+//     if (e.key === "Enter") {
+//       confirmEdit(input.value);
+//     }
+//   });
+// }
+
+function confirmEdit(newValue, type = "title") {
+  const display = document.getElementById(`${type}Display`);
+  const container = document.querySelector(`.${type}-container`);
+  const input = container.querySelector(`.${type}-input`);
+  const confirmButton = container.querySelector(".confirm-button");
+
+  // Update title or artist
+  display.textContent = newValue || "Untitled";
+  display.style.display = "block";
+
+  // Remove input and confirm button
+  if (input) input.remove();
+  if (confirmButton) confirmButton.remove();
+}
+
 function editTitle() {
   const titleDisplay = document.getElementById("titleDisplay");
   const container = document.querySelector(".title-container");
@@ -267,7 +315,7 @@ function editTitle() {
   const confirmButton = document.createElement("button");
   confirmButton.className = "confirm-button";
   confirmButton.innerHTML = "✓";
-  confirmButton.onclick = () => confirmEdit(input.value);
+  confirmButton.onclick = () => confirmEdit(input.value, "title");
 
   // Replace title with input and button
   titleDisplay.style.display = "none";
@@ -280,22 +328,40 @@ function editTitle() {
   // Handle enter key
   input.addEventListener("keypress", function (e) {
     if (e.key === "Enter") {
-      confirmEdit(input.value);
+      confirmEdit(input.value, "title");
     }
   });
 }
 
-function confirmEdit(newTitle) {
-  const titleDisplay = document.getElementById("titleDisplay");
-  const container = document.querySelector(".title-container");
-  const input = container.querySelector(".title-input");
-  const confirmButton = container.querySelector(".confirm-button");
+function editArtist() {
+  const artistDisplay = document.getElementById("artistDisplay");
+  const container = document.querySelector(".artist-container");
+  const currentArtist = artistDisplay.textContent;
 
-  // Update title
-  titleDisplay.textContent = newTitle || "Untitled";
-  titleDisplay.style.display = "block";
+  // Create input element
+  const input = document.createElement("input");
+  input.type = "text";
+  input.value = currentArtist;
+  input.className = "artist-input";
 
-  // Remove input and confirm button
-  if (input) input.remove();
-  if (confirmButton) confirmButton.remove();
+  // Create confirm button
+  const confirmButton = document.createElement("button");
+  confirmButton.className = "confirm-button";
+  confirmButton.innerHTML = "✓";
+  confirmButton.onclick = () => confirmEdit(input.value, "artist");
+
+  // Replace artist with input and button
+  artistDisplay.style.display = "none";
+  container.insertBefore(input, artistDisplay);
+  container.insertBefore(confirmButton, artistDisplay.nextSibling);
+
+  // Focus input
+  input.focus();
+
+  // Handle enter key
+  input.addEventListener("keypress", function (e) {
+    if (e.key === "Enter") {
+      confirmEdit(input.value, "artist");
+    }
+  });
 }
