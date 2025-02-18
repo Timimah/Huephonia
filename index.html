@@ -2,6 +2,7 @@
 <html>
 
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -13,14 +14,18 @@
     <div class="header">
         <p>HueGene</p>
     </div>
-    <div class="title-wrapper">
-        <!-- <div
-            style="font-size: smaller; justify-content: center; text-align: center; background-color: #8a4af3; display: inline-block;">
-            Title
-        </div> -->
-        <div class="title-container">
-            <div id="titleDisplay" class="title" ondblclick="editTitle()">Untitled</div>
-            <div class="tooltip">Double click to edit title</div>
+    <div class="page-description">
+        <div class="title-wrapper">
+            <div class="title-container">
+                <div id="titleDisplay" class="title" ondblclick="editTitle()">Untitled</div>
+                <div class="tooltip">Double click to edit title</div>
+            </div>
+        </div>
+        <div class="artist-wrapper">
+            <div class="artist-container">
+                <div id="artistDisplay" class="artist" ondblclick="editArtist()">Untitled</div>
+                <div class="tooltip">Double click to artist</div>
+            </div>
         </div>
     </div>
     <div class="container">
@@ -55,12 +60,12 @@
         </div>
     </div>
     <div class="button">
-        <button onclick="downloadSVG()" style="width: 20%; background-color: #8a4af3;">Download SVG</button>
-        <button onclick="clearNotes()" style="width: 20%; background-color: #d9d9d9; color: black;">Clear Notes</button>
+        <button onclick="downloadSVG()" style="background-color: #8a4af3;">Download SVG</button>
+        <button onclick="clearNotes()" style="background-color: #d9d9d9; color: black;">Clear Notes</button>
         <div id="unmappedNotes"></div>
     </div>
     <div class="footer">
-        <p>HueGeen v 1.0 </p>
+        <p>HueGene v 1.0 </p>
         <!-- <p>&copy; Enda Rae | HueGeen v 1.0 </p> -->
     </div>
 </body>
