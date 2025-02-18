@@ -53,19 +53,12 @@ pre {
 
 label {
     font-weight: bold;
-    font-size: x-large;
+    font-size: large;
 }
 
-.overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    overflow: scroll;
-    display: flex;
-    flex-direction: column;
-    background: lime;
+p {
+    margin: 0;
+    padding: 0.5em 0;
 }
 
 .header {
@@ -87,7 +80,7 @@ label {
     /* Adjusted to make hues half the width of hues-with-notes */
     gap: 2em;
     height: 100%;
-    padding: 2em;
+    padding: 0 4em;
 }
 
 .notation {
@@ -95,14 +88,14 @@ label {
     grid-gap: 2em 2em;
     grid-template-rows: auto auto;
     position: relative;
-    /* min-height: 100%; */
+    height: inherit;
 }
 
 .music-notation {
-    padding-left: 2em;
-    padding-right: 2em;
+    /* padding-left: 2em; */
+    /* padding-right: 2em; */
     width: inherit;
-    height: inherit;
+    /* height: inherit; */
     display: flex;
     flex-direction: column;
     /* gap: 1em; */
@@ -119,11 +112,7 @@ label {
 }
 
 .parsed-note {
-    height: inherit;
-    padding-left: 2em;
-    padding-right: 2em;
     position: relative;
-    /* Ensure consistent height */
 }
 
 .parsed-note pre {
@@ -131,7 +120,7 @@ label {
     margin-top: 1em;
     border: 0.15em solid #d9d9d9;
     border-radius: 1em;
-    height: 20em;
+    height: 21em;
     background-color: #d9d9d9;
 }
 
@@ -139,9 +128,24 @@ label {
     display: flex;
     margin-bottom: 12px;
     min-width: min-content;
+    padding: 0;
+    margin: 0 0 12px 0;
+    /* Keep only bottom margin */
+}
+
+.line-number {
+    padding: 1em;
+    /* background-color: #47494f; */
+    width: 6px;
+    font-size: x-small;
+    text-align: right;
+    color: #666;
+    font-family: 'Space Mono', monospace;
 }
 
 .note {
+    box-sizing: border-box;
+    position: relative;
     height: 48px;
     border: 0.75pt solid #353638;
     display: flex;
@@ -149,13 +153,20 @@ label {
     justify-content: center;
     font-size: 7px;
     font-weight: bold;
+    padding: 0;
+    margin: 0;
 }
 
-.button {
-    display: flex;
-    justify-content: center;
-    gap: 2em;
-    margin-bottom: 2em;
+.note-number {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    font-size: 12px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    padding: 1px 4px;
+    border-radius: 3px;
+    z-index: 1;
 }
 
 .hues,
@@ -171,6 +182,8 @@ label {
 #visualResult,
 #visualResultNoNotes {
     width: 100%;
+    padding: 0;
+    margin: 0;
 }
 
 .hues>div,
@@ -204,4 +217,98 @@ label {
     border-radius: 4px;
     display: inline-block;
     margin-right: 10px;
+}
+
+.button {
+    /* background-color: #333; */
+    display: flex;
+    justify-content: center;
+    gap: 2em;
+    padding: 1em;
+}
+
+.title-container {
+    text-align: center;
+    margin: 20px 0;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.title-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.title {
+    font-size: x-large;
+    font-weight: bolder;
+    background-color: black;
+    color: white;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 0.5em;
+    border: 3pt solid transparent;
+}
+
+.title:hover {
+    border: 3pt solid #000000;
+}
+
+.title-input {
+    font-size: x-large;
+    font-weight: bold;
+    font-family: "Space Mono", serif;
+    border: 3pt solid #000000;
+    border-radius: 0.5em;
+    padding: 5px 10px;
+    margin-right: 10px;
+    width: 8em;
+}
+
+.confirm-button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.tooltip {
+    visibility: hidden;
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 5px 10px;
+    border-radius: 6px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.title:hover+.tooltip {
+    visibility: visible;
+}
+
+.footer {
+    border-top: 0.15em solid #d9d9d9;
+    display: flex;
+    justify-content: center;
+    padding: 0 2em;
+}
+
+.footer p {
+    font-size: x-small;
+    font-weight: lighter;
 }

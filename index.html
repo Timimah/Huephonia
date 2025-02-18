@@ -71,22 +71,44 @@
         function downloadSVG() {
             const visualResultNoNotes = document.getElementById('visualResultNoNotes');
             const lines = visualResultNoNotes.getElementsByClassName('line-container');
+            const titleDisplay = document.getElementById('titleDisplay');
+
+            let fileName = titleDisplay.textContent.trim();
+            if (fileName === 'Untitled' || !fileName) {
+                fileName = 'music_notation';
+            }
+            fileName = fileName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
 
             let maxWidth = 0;
             Array.from(lines).forEach(line => {
-                const lineWidth = Array.from(line.children).reduce((sum, note) => sum + note.offsetWidth, 0);
+                // Skip the line-number div and only process note divs
+                const notes = Array.from(line.children).slice(1); // Skip first child (line number)
+                const lineWidth = notes.reduce((sum, note) => {
+                    const computedStyle = window.getComputedStyle(note);
+                    const width = parseFloat(computedStyle.width);
+                    return sum + width;
+                }, 0);
                 maxWidth = Math.max(maxWidth, lineWidth);
             });
 
             const height = lines.length * 60; // 48px height + 12px margin
+            const padding = 20; // Add padding to SVG
+            const totalWidth = maxWidth + (padding * 2);
+            const totalHeight = height + (padding * 2);
 
-            let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${maxWidth}" height="${height}" style="padding: 2em;">`;
+            let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${totalWidth}" height="${totalHeight}">`;
+
+            // Add a background rectangle (optional)
+            svg += `<rect x="0" y="0" width="${totalWidth}" height="${totalHeight}" fill="white"/>`;
 
             Array.from(lines).forEach((line, lineIndex) => {
-                let xOffset = 0;
-                Array.from(line.children).forEach(note => {
-                    const width = note.offsetWidth;
-                    const y = lineIndex * 60;
+                let xOffset = padding; // Start after padding
+                // Skip the line-number div and only process note divs
+                const notes = Array.from(line.children).slice(1); // Skip first child (line number)
+                notes.forEach(note => {
+                    const computedStyle = window.getComputedStyle(note);
+                    const width = parseFloat(computedStyle.width);
+                    const y = (lineIndex * 60) + padding; // Add padding to y position
                     const color = note.style.backgroundColor;
 
                     svg += `<rect x="${xOffset}" y="${y}" width="${width}" height="48" 
@@ -102,11 +124,34 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'music_notation.svg';
+            a.download = `${fileName}.svg`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
+        }
+
+        function updateLineNumbers() {
+            const input = document.getElementById('inputText');
+            let text = input.value;
+
+            // Remove existing line numbers
+            text = text.replace(/^\{?\*?\d+\*?\}?\|\s*/gm, '');
+
+            // Add new line numbers with bold formatting
+            const lines = text.split('\n');
+            const numberedLines = lines.map((line, index) => `{${index + 1}}| ${line}`);
+
+            // Update the textarea while preserving cursor position
+            const cursorPosition = input.selectionStart;
+            const lineBreaksBeforeCursor = text.substr(0, cursorPosition).split('\n').length - 1;
+            const additionalCharsPerLine = lines.length.toString().length + 6; // length of number + "{*" + "*}| "
+
+            input.value = numberedLines.join('\n');
+
+            // Adjust cursor position
+            const newPosition = cursorPosition + (lineBreaksBeforeCursor + 1) * additionalCharsPerLine;
+            input.setSelectionRange(newPosition, newPosition);
         }
 
         function parseNotes() {
@@ -154,28 +199,38 @@
                 `;
             }
 
-            result.forEach(line => {
+            result.forEach((line, index) => {
                 const lineContainer = document.createElement('div');
                 lineContainer.className = 'line-container';
 
+                const lineNumber = document.createElement('div');
+                lineNumber.className = 'line-number';
+                lineNumber.textContent = index + 1;
+                lineContainer.appendChild(lineNumber);
+
                 const lineContainerNoNotes = document.createElement('div');
                 lineContainerNoNotes.className = 'line-container';
+
+                const lineNumberNoNotes = document.createElement('div');
+                lineNumberNoNotes.className = 'line-number';
+                lineNumberNoNotes.textContent = index + 1;
+                lineContainerNoNotes.appendChild(lineNumberNoNotes);
 
                 line.forEach(noteStr => {
                     const [_, note, duration] = noteStr.match(/([A-Za-z]+(?:b|p)?)(?:\((\d*\.?\d+)\))/);
 
                     const noteDiv = document.createElement('div');
                     noteDiv.className = 'note';
-                    let width = parseFloat(duration) * 144;
+                    const width = Math.floor(parseFloat(duration) * 144);
                     noteDiv.style.width = `${width}px`;
                     noteDiv.style.backgroundColor = getColor(note) || '#ffffff';
                     noteDiv.textContent = `${note}(${duration})`;
                     lineContainer.appendChild(noteDiv);
 
                     const noteDivNoNotes = document.createElement('div');
-                    width = parseFloat(duration) * 48;
+                    const widthNoNotes = Math.floor(parseFloat(duration) * 48);
                     noteDivNoNotes.className = 'note';
-                    noteDivNoNotes.style.width = `${width}px`;
+                    noteDivNoNotes.style.width = `${widthNoNotes}px`;
                     noteDivNoNotes.style.backgroundColor = getColor(note) || '#ffffff';
                     lineContainerNoNotes.appendChild(noteDivNoNotes);
                 });
@@ -186,24 +241,94 @@
         }
 
         function clearNotes() {
-            document.getElementById("inputText").value = ""
-            document.getElementById("visualResult").innerHTML = ""
-            document.getElementById("visualResultNoNotes").innerHTML = ""
-            document.getElementById("result").innerHTML = ""
+            document.getElementById("inputText").value = "{1}| ";
+            document.getElementById("visualResult").innerHTML = "";
+            document.getElementById("visualResultNoNotes").innerHTML = "";
+            document.getElementById("result").innerHTML = "";
+        }
+
+        // When the page loads, initialize with "{1}| "
+        window.onload = function () {
+            document.getElementById("inputText").value = "";
+            const inputText = document.getElementById("inputText");
+            if (!inputText.value) {
+                inputText.value = "{1}| ";
+            }
+        }
+
+        function editTitle() {
+            const titleDisplay = document.getElementById('titleDisplay');
+            const container = document.querySelector('.title-container');
+            const currentTitle = titleDisplay.textContent;
+
+            // Create input element
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = currentTitle;
+            input.className = 'title-input';
+
+            // Create confirm button
+            const confirmButton = document.createElement('button');
+            confirmButton.className = 'confirm-button';
+            confirmButton.innerHTML = '✓';
+            confirmButton.onclick = () => confirmEdit(input.value);
+
+            // Replace title with input and button
+            titleDisplay.style.display = 'none';
+            container.insertBefore(input, titleDisplay);
+            container.insertBefore(confirmButton, titleDisplay.nextSibling);
+
+            // Focus input
+            input.focus();
+
+            // Handle enter key
+            input.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    confirmEdit(input.value);
+                }
+            });
+        }
+
+        function confirmEdit(newTitle) {
+            const titleDisplay = document.getElementById('titleDisplay');
+            const container = document.querySelector('.title-container');
+            const input = container.querySelector('.title-input');
+            const confirmButton = container.querySelector('.confirm-button');
+
+            // Update title
+            titleDisplay.textContent = newTitle || 'Untitled';
+            titleDisplay.style.display = 'block';
+
+            // Remove input and confirm button
+            if (input) input.remove();
+            if (confirmButton) confirmButton.remove();
         }
     </script>
-    <title>Hue Gen</title>
+    <title>Hue Geen</title>
 </head>
 
 <body>
     <div class="header">
-        <p>Hue Gen</p>
+        <p>HueGeen</p>
+    </div>
+    <div class="title-wrapper">
+        <!-- <div
+            style="font-size: smaller; justify-content: center; text-align: center; background-color: #8a4af3; display: inline-block;">
+            Title
+        </div> -->
+        <div class="title-container">
+            <div id="titleDisplay" class="title" ondblclick="editTitle()">Untitled</div>
+            <div class="tooltip">Double click to edit title</div>
+        </div>
     </div>
     <div class="container">
         <div class="notation">
             <div class="music-notation">
                 <label for="music-notation">Music Notation</label>
-                <textarea id="inputText" placeholder="Enter music notation here..."></textarea>
+                <div style="position: relative;">
+                    <textarea id="inputText" placeholder="Enter music notation here..." oninput="updateLineNumbers()"
+                        onkeydown="if(event.key === 'Enter') { event.preventDefault(); const pos = this.selectionStart; this.value = this.value.slice(0, pos) + '\n' + (this.value.split('\n').length + 1) + '| ' + this.value.slice(pos); this.selectionStart = this.selectionEnd = pos + 4; }"></textarea>
+                </div>
                 <div style="display: flex;">
                     <button onclick="parseNotes()" style="width: 50%; background-color: #8a4af3;">Parse</button>
                 </div>
@@ -231,11 +356,10 @@
         <button onclick="clearNotes()" style="width: 20%; background-color: #d9d9d9; color: black;">Clear Notes</button>
         <div id="unmappedNotes"></div>
     </div>
-    <!-- <div class="overlay">
-        
-        
-        
-    </div> -->
+    <div class="footer">
+        <p>HueGeen v 1.0 </p>
+        <!-- <p>&copy; Enda Rae | HueGeen v 1.0 </p> -->
+    </div>
 </body>
 
 </html>
