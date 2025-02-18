@@ -259,7 +259,7 @@ function confirmEdit(newValue, type = "title") {
   const confirmButton = container.querySelector(".confirm-button");
 
   // Update title or artist
-  display.textContent = newValue || "Untitled";
+  display.textContent = newValue || input.placeholder;
   display.style.display = "block";
 
   // Remove input and confirm button
@@ -275,7 +275,7 @@ function editTitle() {
   // Create input element
   const input = document.createElement("input");
   input.type = "text";
-  input.value = currentTitle;
+  input.placeholder = currentTitle;
   input.className = "title-input";
 
   // Create confirm button
@@ -308,7 +308,7 @@ function editArtist() {
   // Create input element
   const input = document.createElement("input");
   input.type = "text";
-  input.value = currentArtist;
+  input.placeholder = currentArtist;
   input.className = "artist-input";
 
   // Create confirm button
