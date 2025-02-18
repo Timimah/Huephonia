@@ -252,39 +252,6 @@ function clearNotes() {
   document.getElementById("result").innerHTML = "";
 }
 
-// function editTitle() {
-//   const titleDisplay = document.getElementById("titleDisplay");
-//   const container = document.querySelector(".title-container");
-//   const currentTitle = titleDisplay.textContent;
-
-//   // Create input element
-//   const input = document.createElement("input");
-//   input.type = "text";
-//   input.value = currentTitle;
-//   input.className = "title-input";
-
-//   // Create confirm button
-//   const confirmButton = document.createElement("button");
-//   confirmButton.className = "confirm-button";
-//   confirmButton.innerHTML = "✓";
-//   confirmButton.onclick = () => confirmEdit(input.value);
-
-//   // Replace title with input and button
-//   titleDisplay.style.display = "none";
-//   container.insertBefore(input, titleDisplay);
-//   container.insertBefore(confirmButton, titleDisplay.nextSibling);
-
-//   // Focus input
-//   input.focus();
-
-//   // Handle enter key
-//   input.addEventListener("keypress", function (e) {
-//     if (e.key === "Enter") {
-//       confirmEdit(input.value);
-//     }
-//   });
-// }
-
 function confirmEdit(newValue, type = "title") {
   const display = document.getElementById(`${type}Display`);
   const container = document.querySelector(`.${type}-container`);
