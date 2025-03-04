@@ -1,11 +1,11 @@
 // When the page loads, initialize with "{1}| "
 window.onload = function () {
-  document.getElementById("inputText").value = "";
-  const inputText = document.getElementById("inputText");
+  document.getElementById("inputText").value = ""
+  const inputText = document.getElementById("inputText")
   if (!inputText.value) {
-    inputText.value = "{1}| ";
+    inputText.value = "{1}| "
   }
-};
+}
 
 const colorMap = {
   R: "#f2f2f2",
@@ -57,139 +57,141 @@ const colorMap = {
   Ap: "#d699ff",
   Bbp: "#ff80ff",
   Bp: "#ff99c9",
-};
+}
 
 const caseInsensitiveColorMap = Object.fromEntries(
   Object.entries(colorMap).map(([key, value]) => [key.toLowerCase(), value])
-);
+)
 
 function getColor(note) {
-  return caseInsensitiveColorMap[note.toLowerCase()];
+  return caseInsensitiveColorMap[note.toLowerCase()]
 }
 
 function downloadSVG() {
-  const visualResultNoNotes = document.getElementById("visualResultNoNotes");
-  const lines = visualResultNoNotes.getElementsByClassName("line-container");
-  const titleDisplay = document.getElementById("titleDisplay");
+  const visualResultNoNotes = document.getElementById("visualResultNoNotes")
+  const lines = visualResultNoNotes.getElementsByClassName("line-container")
+  const titleDisplay = document.getElementById("titleDisplay")
+  const artistDisplay = document.getElementById("artistDisplay")
 
-  let fileName = titleDisplay.textContent.trim();
+  let fileName =
+    titleDisplay.textContent.trim() + "_" + artistDisplay.textContent.trim()
   if (fileName === "Untitled" || !fileName) {
-    fileName = "music_notation";
+    fileName = "music_notation"
   }
-  fileName = fileName.replace(/[^a-z0-9]/gi, "_").toLowerCase();
+  fileName = fileName.replace(/[^a-z0-9]/gi, "_").toLowerCase()
 
-  let maxWidth = 0;
+  let maxWidth = 0
   Array.from(lines).forEach((line) => {
     // Skip the line-number div and only process note divs
-    const notes = Array.from(line.children).slice(1); // Skip first child (line number)
+    const notes = Array.from(line.children).slice(1) // Skip first child (line number)
     const lineWidth = notes.reduce((sum, note) => {
-      const computedStyle = window.getComputedStyle(note);
-      const width = parseFloat(computedStyle.width);
-      return sum + width;
-    }, 0);
-    maxWidth = Math.max(maxWidth, lineWidth);
-  });
+      const computedStyle = window.getComputedStyle(note)
+      const width = parseFloat(computedStyle.width)
+      return sum + width
+    }, 0)
+    maxWidth = Math.max(maxWidth, lineWidth)
+  })
 
-  const height = lines.length * 60; // 48px height + 12px margin
-  const padding = 20; // Add padding to SVG
-  const totalWidth = maxWidth + padding * 2;
-  const totalHeight = height + padding * 2;
+  const height = lines.length * 60 // 48px height + 12px margin
+  const padding = 20 // Add padding to SVG
+  const totalWidth = maxWidth + padding * 2
+  const totalHeight = height + padding * 2
 
-  let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${totalWidth}" height="${totalHeight}">`;
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${totalWidth}" height="${totalHeight}">`
 
   // Add a background rectangle (optional)
-  svg += `<rect x="0" y="0" width="${totalWidth}" height="${totalHeight}" fill="white"/>`;
+  svg += `<rect x="0" y="0" width="${totalWidth}" height="${totalHeight}" fill="white"/>`
 
   Array.from(lines).forEach((line, lineIndex) => {
-    let xOffset = padding; // Start after padding
+    let xOffset = padding // Start after padding
     // Skip the line-number div and only process note divs
-    const notes = Array.from(line.children).slice(1); // Skip first child (line number)
+    const notes = Array.from(line.children).slice(1) // Skip first child (line number)
     notes.forEach((note) => {
-      const computedStyle = window.getComputedStyle(note);
-      const width = parseFloat(computedStyle.width);
-      const y = lineIndex * 60 + padding; // Add padding to y position
-      const color = note.style.backgroundColor;
+      const computedStyle = window.getComputedStyle(note)
+      const width = parseFloat(computedStyle.width)
+      const y = lineIndex * 60 + padding // Add padding to y position
+      const color = note.style.backgroundColor
 
       svg += `<rect x="${xOffset}" y="${y}" width="${width}" height="48" 
-                   fill="${color}" stroke="#353638" stroke-width="0.75"/>`;
+                   fill="${color}" stroke="#353638" stroke-width="0.75"/>`
 
-      xOffset += width;
-    });
-  });
+      xOffset += width
+    })
+  })
 
-  svg += "</svg>";
+  svg += "</svg>"
 
-  const blob = new Blob([svg], { type: "image/svg+xml" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `${fileName}.svg`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  const blob = new Blob([svg], { type: "image/svg+xml" })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement("a")
+  a.href = url
+  a.download = `${fileName}.svg`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
 }
 
 function updateLineNumbers() {
-  const input = document.getElementById("inputText");
-  let text = input.value;
+  const input = document.getElementById("inputText")
+  let text = input.value
 
   // Remove existing line numbers
-  text = text.replace(/^\{?\*?\d+\*?\}?\|\s*/gm, "");
+  text = text.replace(/^\{?\*?\d+\*?\}?\|\s*/gm, "")
 
   // Add new line numbers with bold formatting
-  const lines = text.split("\n");
-  const numberedLines = lines.map((line, index) => `{${index + 1}}| ${line}`);
+  const lines = text.split("\n")
+  const numberedLines = lines.map((line, index) => `{${index + 1}}| ${line}`)
 
   // Update the textarea while preserving cursor position
-  const cursorPosition = input.selectionStart;
+  const cursorPosition = input.selectionStart
   const lineBreaksBeforeCursor =
-    text.substr(0, cursorPosition).split("\n").length - 1;
-  const additionalCharsPerLine = lines.length.toString().length + 6; // length of number + "{*" + "*}| "
+    text.substr(0, cursorPosition).split("\n").length - 1
+  const additionalCharsPerLine = lines.length.toString().length + 6 // length of number + "{*" + "*}| "
 
-  input.value = numberedLines.join("\n");
+  input.value = numberedLines.join("\n")
 
   // Adjust cursor position
   const newPosition =
-    cursorPosition + (lineBreaksBeforeCursor + 1) * additionalCharsPerLine;
-  input.setSelectionRange(newPosition, newPosition);
+    cursorPosition + (lineBreaksBeforeCursor + 1) * additionalCharsPerLine
+  input.setSelectionRange(newPosition, newPosition)
 }
 
 function parseNotes() {
-  const input = document.getElementById("inputText").value;
-  const resultDiv = document.getElementById("result");
-  const visualResult = document.getElementById("visualResult");
-  const visualResultNoNotes = document.getElementById("visualResultNoNotes");
-  const unmappedNotesDiv = document.getElementById("unmappedNotes");
+  const input = document.getElementById("inputText").value
+  const resultDiv = document.getElementById("result")
+  const visualResult = document.getElementById("visualResult")
+  const visualResultNoNotes = document.getElementById("visualResultNoNotes")
+  const unmappedNotesDiv = document.getElementById("unmappedNotes")
 
-  visualResult.innerHTML = "";
-  visualResultNoNotes.innerHTML = "";
-  unmappedNotesDiv.innerHTML = "";
+  visualResult.innerHTML = ""
+  visualResultNoNotes.innerHTML = ""
+  unmappedNotesDiv.innerHTML = ""
 
-  const unmappedNotes = new Set();
+  const unmappedNotes = new Set()
 
-  const cleanText = input.trim().replace(/^\{|\}$/g, "");
-  const lines = cleanText.split("\n");
+  const cleanText = input.trim().replace(/^\{|\}$/g, "")
+  const lines = cleanText.split("\n")
 
   let result = lines.map((line) => {
-    const notePattern = /([A-Za-z]+(?:b|p)?)(?:\((\d*\.?\d+)\))/g;
-    const matches = [];
-    let match;
+    const notePattern = /([A-Za-z]+(?:b|p)?)(?:\((\d*\.?\d+)\))/g
+    const matches = []
+    let match
 
     while ((match = notePattern.exec(line)) !== null) {
-      const [fullMatch, note] = match;
+      const [fullMatch, note] = match
       if (!getColor(note)) {
-        unmappedNotes.add(note);
+        unmappedNotes.add(note)
       }
-      matches.push(fullMatch);
+      matches.push(fullMatch)
     }
 
-    return matches;
-  });
+    return matches
+  })
 
-  result = result.filter((line) => line.length > 0);
+  result = result.filter((line) => line.length > 0)
 
-  resultDiv.textContent = JSON.stringify(result, null, 2);
+  resultDiv.textContent = JSON.stringify(result, null, 2)
 
   if (unmappedNotes.size > 0) {
     unmappedNotesDiv.innerHTML = `
@@ -199,136 +201,136 @@ function parseNotes() {
                   .map((note) => `<li>${note}</li>`)
                   .join("")}
             </ul>
-        `;
+        `
   }
 
   result.forEach((line, index) => {
-    const lineContainer = document.createElement("div");
-    lineContainer.className = "line-container";
+    const lineContainer = document.createElement("div")
+    lineContainer.className = "line-container"
 
-    const lineNumber = document.createElement("div");
-    lineNumber.className = "line-number";
-    lineNumber.textContent = index + 1;
-    lineContainer.appendChild(lineNumber);
+    const lineNumber = document.createElement("div")
+    lineNumber.className = "line-number"
+    lineNumber.textContent = index + 1
+    lineContainer.appendChild(lineNumber)
 
-    const lineContainerNoNotes = document.createElement("div");
-    lineContainerNoNotes.className = "line-container";
+    const lineContainerNoNotes = document.createElement("div")
+    lineContainerNoNotes.className = "line-container"
 
-    const lineNumberNoNotes = document.createElement("div");
-    lineNumberNoNotes.className = "line-number";
-    lineNumberNoNotes.textContent = index + 1;
-    lineContainerNoNotes.appendChild(lineNumberNoNotes);
+    const lineNumberNoNotes = document.createElement("div")
+    lineNumberNoNotes.className = "line-number"
+    lineNumberNoNotes.textContent = index + 1
+    lineContainerNoNotes.appendChild(lineNumberNoNotes)
 
     line.forEach((noteStr) => {
       const [_, note, duration] = noteStr.match(
         /([A-Za-z]+(?:b|p)?)(?:\((\d*\.?\d+)\))/
-      );
+      )
 
-      const noteDiv = document.createElement("div");
-      noteDiv.className = "note";
-      const width = Math.floor(parseFloat(duration) * 144);
-      noteDiv.style.width = `${width}px`;
-      noteDiv.style.backgroundColor = getColor(note) || "#ffffff";
-      noteDiv.textContent = `${note}(${duration})`;
-      lineContainer.appendChild(noteDiv);
+      const noteDiv = document.createElement("div")
+      noteDiv.className = "note"
+      const width = Math.floor(parseFloat(duration) * 144)
+      noteDiv.style.width = `${width}px`
+      noteDiv.style.backgroundColor = getColor(note) || "#ffffff"
+      noteDiv.textContent = `${note}(${duration})`
+      lineContainer.appendChild(noteDiv)
 
-      const noteDivNoNotes = document.createElement("div");
-      const widthNoNotes = Math.floor(parseFloat(duration) * 48);
-      noteDivNoNotes.className = "note";
-      noteDivNoNotes.style.width = `${widthNoNotes}px`;
-      noteDivNoNotes.style.backgroundColor = getColor(note) || "#ffffff";
-      lineContainerNoNotes.appendChild(noteDivNoNotes);
-    });
+      const noteDivNoNotes = document.createElement("div")
+      const widthNoNotes = Math.floor(parseFloat(duration) * 48)
+      noteDivNoNotes.className = "note"
+      noteDivNoNotes.style.width = `${widthNoNotes}px`
+      noteDivNoNotes.style.backgroundColor = getColor(note) || "#ffffff"
+      lineContainerNoNotes.appendChild(noteDivNoNotes)
+    })
 
-    visualResult.appendChild(lineContainer);
-    visualResultNoNotes.appendChild(lineContainerNoNotes);
-  });
+    visualResult.appendChild(lineContainer)
+    visualResultNoNotes.appendChild(lineContainerNoNotes)
+  })
 }
 
 function clearNotes() {
-  document.getElementById("inputText").value = "{1}| ";
-  document.getElementById("visualResult").innerHTML = "";
-  document.getElementById("visualResultNoNotes").innerHTML = "";
-  document.getElementById("result").innerHTML = "";
+  document.getElementById("inputText").value = "{1}| "
+  document.getElementById("visualResult").innerHTML = ""
+  document.getElementById("visualResultNoNotes").innerHTML = ""
+  document.getElementById("result").innerHTML = ""
 }
 
 function confirmEdit(newValue, type = "title") {
-  const display = document.getElementById(`${type}Display`);
-  const container = document.querySelector(`.${type}-container`);
-  const input = container.querySelector(`.${type}-input`);
-  const confirmButton = container.querySelector(".confirm-button");
+  const display = document.getElementById(`${type}Display`)
+  const container = document.querySelector(`.${type}-container`)
+  const input = container.querySelector(`.${type}-input`)
+  const confirmButton = container.querySelector(".confirm-button")
 
   // Update title or artist
-  display.textContent = newValue || input.placeholder;
-  display.style.display = "block";
+  display.textContent = newValue || input.placeholder
+  display.style.display = "block"
 
   // Remove input and confirm button
-  if (input) input.remove();
-  if (confirmButton) confirmButton.remove();
+  if (input) input.remove()
+  if (confirmButton) confirmButton.remove()
 }
 
 function editTitle() {
-  const titleDisplay = document.getElementById("titleDisplay");
-  const container = document.querySelector(".title-container");
-  const currentTitle = titleDisplay.textContent;
+  const titleDisplay = document.getElementById("titleDisplay")
+  const container = document.querySelector(".title-container")
+  const currentTitle = titleDisplay.textContent
 
   // Create input element
-  const input = document.createElement("input");
-  input.type = "text";
-  input.placeholder = currentTitle;
-  input.className = "title-input";
+  const input = document.createElement("input")
+  input.type = "text"
+  input.placeholder = currentTitle
+  input.className = "title-input"
 
   // Create confirm button
-  const confirmButton = document.createElement("button");
-  confirmButton.className = "confirm-button";
-  confirmButton.innerHTML = "✓";
-  confirmButton.onclick = () => confirmEdit(input.value, "title");
+  const confirmButton = document.createElement("button")
+  confirmButton.className = "confirm-button"
+  confirmButton.innerHTML = "✓"
+  confirmButton.onclick = () => confirmEdit(input.value, "title")
 
   // Replace title with input and button
-  titleDisplay.style.display = "none";
-  container.insertBefore(input, titleDisplay);
-  container.insertBefore(confirmButton, titleDisplay.nextSibling);
+  titleDisplay.style.display = "none"
+  container.insertBefore(input, titleDisplay)
+  container.insertBefore(confirmButton, titleDisplay.nextSibling)
 
   // Focus input
-  input.focus();
+  input.focus()
 
   // Handle enter key
   input.addEventListener("keypress", function (e) {
     if (e.key === "Enter") {
-      confirmEdit(input.value, "title");
+      confirmEdit(input.value, "title")
     }
-  });
+  })
 }
 
 function editArtist() {
-  const artistDisplay = document.getElementById("artistDisplay");
-  const container = document.querySelector(".artist-container");
-  const currentArtist = artistDisplay.textContent;
+  const artistDisplay = document.getElementById("artistDisplay")
+  const container = document.querySelector(".artist-container")
+  const currentArtist = artistDisplay.textContent
 
   // Create input element
-  const input = document.createElement("input");
-  input.type = "text";
-  input.placeholder = currentArtist;
-  input.className = "artist-input";
+  const input = document.createElement("input")
+  input.type = "text"
+  input.placeholder = currentArtist
+  input.className = "artist-input"
 
   // Create confirm button
-  const confirmButton = document.createElement("button");
-  confirmButton.className = "confirm-button";
-  confirmButton.innerHTML = "✓";
-  confirmButton.onclick = () => confirmEdit(input.value, "artist");
+  const confirmButton = document.createElement("button")
+  confirmButton.className = "confirm-button"
+  confirmButton.innerHTML = "✓"
+  confirmButton.onclick = () => confirmEdit(input.value, "artist")
 
   // Replace artist with input and button
-  artistDisplay.style.display = "none";
-  container.insertBefore(input, artistDisplay);
-  container.insertBefore(confirmButton, artistDisplay.nextSibling);
+  artistDisplay.style.display = "none"
+  container.insertBefore(input, artistDisplay)
+  container.insertBefore(confirmButton, artistDisplay.nextSibling)
 
   // Focus input
-  input.focus();
+  input.focus()
 
   // Handle enter key
   input.addEventListener("keypress", function (e) {
     if (e.key === "Enter") {
-      confirmEdit(input.value, "artist");
+      confirmEdit(input.value, "artist")
     }
-  });
+  })
 }

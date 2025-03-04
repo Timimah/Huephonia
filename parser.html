@@ -49,6 +49,104 @@
         }
     </style>
     <script>
+
+        // function parseNotes() {
+        //             const input = document.getElementById('inputText').value;
+        //             const resultDiv = document.getElementById('result');
+        //             const visualResult = document.getElementById('visualResult');
+        //             const visualResultNoNotes = document.getElementById('visualResultNoNotes');
+        //             const unmappedNotesDiv = document.getElementById('unmappedNotes');
+
+        //             visualResult.innerHTML = '';
+        //             visualResultNoNotes.innerHTML = '';
+        //             unmappedNotesDiv.innerHTML = '';
+
+        //             const unmappedNotes = new Set();
+
+        //             const cleanText = input.trim().replace(/^\{|\}$/g, '');
+        //             const lines = cleanText.split('\n');
+
+        //             let noteCounter = 1; // Initialize note counter
+        //             let result = lines.map(line => {
+        //                 const notePattern = /([A-Za-z]+(?:b|p)?)(?:\((\d*\.?\d+)\))/g;
+        //                 const matches = [];
+        //                 let match;
+        //                 let lineText = line;
+        //                 let offset = 0;
+
+        //                 while ((match = notePattern.exec(line)) !== null) {
+        //                     const [fullMatch, note] = match;
+        //                     if (!getColor(note)) {
+        //                         unmappedNotes.add(note);
+        //                     }
+        //                     // Insert number before the note in the input
+        //                     const insertPosition = match.index + offset;
+        //                     lineText = lineText.slice(0, insertPosition) + `[${noteCounter}]` + lineText.slice(insertPosition);
+        //                     offset += `[${noteCounter}]`.length;
+
+        //                     matches.push({
+        //                         fullMatch,
+        //                         number: noteCounter
+        //                     });
+        //                     noteCounter++;
+        //                 }
+
+        //                 // Update the input text with numbers
+        //                 if (matches.length > 0) {
+        //                     const textarea = document.getElementById('inputText');
+        //                     const lines = textarea.value.split('\n');
+        //                     lines[matches[0].lineIndex] = lineText;
+        //                     textarea.value = lines.join('\n');
+        //                 }
+
+        //                 return matches;
+        //             });
+
+        //             result = result.filter(line => line.length > 0);
+
+        //             resultDiv.textContent = JSON.stringify(result, null, 2);
+
+        //             if (unmappedNotes.size > 0) {
+        //                 unmappedNotesDiv.innerHTML = `
+        //                     <h3>Notes without color mappings:</h3>
+        //                     <ul>
+        //                         ${Array.from(unmappedNotes).map(note => `<li>${note}</li>`).join('')}
+        //                     </ul>
+        //                 `;
+        //             }
+
+        //             result.forEach(line => {
+        //                 const lineContainer = document.createElement('div');
+        //                 lineContainer.className = 'line-container';
+
+        //                 const lineContainerNoNotes = document.createElement('div');
+        //                 lineContainerNoNotes.className = 'line-container';
+
+        //                 line.forEach(noteObj => {
+        //                     const [_, note, duration] = noteObj.fullMatch.match(/([A-Za-z]+(?:b|p)?)(?:\((\d*\.?\d+)\))/);
+
+        //                     const noteDiv = document.createElement('div');
+        //                     noteDiv.className = 'note';
+        //                     const width = Math.floor(parseFloat(duration) * 144);
+        //                     noteDiv.style.width = `${width}px`;
+        //                     noteDiv.style.backgroundColor = getColor(note) || '#ffffff';
+        //                     noteDiv.innerHTML = `<span class="note-number">${noteObj.number}</span>${note}(${duration})`;
+        //                     lineContainer.appendChild(noteDiv);
+
+        //                     const noteDivNoNotes = document.createElement('div');
+        //                     const widthNoNotes = Math.floor(parseFloat(duration) * 48);
+        //                     noteDivNoNotes.className = 'note';
+        //                     noteDivNoNotes.style.width = `${widthNoNotes}px`;
+        //                     noteDivNoNotes.style.backgroundColor = getColor(note) || '#ffffff';
+        //                     noteDivNoNotes.innerHTML = `<span class="note-number">${noteObj.number}</span>`;
+        //                     lineContainerNoNotes.appendChild(noteDivNoNotes);
+        //                 });
+
+        //                 visualResult.appendChild(lineContainer);
+        //                 visualResultNoNotes.appendChild(lineContainerNoNotes);
+        //             });
+        //         }
+
         function displayDocument(event) {
             const file = event.target.files[0];
             const fileName = file.name;
