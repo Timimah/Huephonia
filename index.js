@@ -488,7 +488,7 @@ function createSoundChain(context, frequency, currentTime, duration) {
   const masterGain = context.createGain()
 
   const convolver = context.createConvolver()
-  const reverbTime = 10
+  const reverbTime = 2
   const rate = 44100
   const length = rate * reverbTime
   const impulse = context.createBuffer(2, length, rate)
@@ -503,7 +503,8 @@ function createSoundChain(context, frequency, currentTime, duration) {
 
   const filter = context.createBiquadFilter()
   filter.type = "lowpass"
-  filter.frequency.value = 2000
+  filter.frequency.value = 1500
+  // filter.frequency.value = 2000
   filter.Q.value = 0.5
 
   mainOsc.connect(mainGain)
@@ -517,8 +518,10 @@ function createSoundChain(context, frequency, currentTime, duration) {
   convolver.connect(context.destination)
   filter.connect(context.destination)
 
-  const attackTime = 0.1
-  const releaseTime = 0.3
+  // const attackTime = 0.1
+  // const releaseTime = 0.3
+  attackTime = 0.05
+  releaseTime = 0.1
 
   mainGain.gain.setValueAtTime(0, currentTime)
   mainGain.gain.linearRampToValueAtTime(0.5, currentTime + attackTime)
