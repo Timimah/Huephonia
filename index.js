@@ -417,6 +417,7 @@ async function initAudioContext() {
   }
 }
 
+// Create effects chain for better sound
 async function playGeneratedArt() {
   try {
     const context = await initAudioContext()
@@ -424,78 +425,202 @@ async function playGeneratedArt() {
 
     const visualResultNoNotes = document.getElementById("visualResultNoNotes")
     const lines = visualResultNoNotes.getElementsByClassName("line-container")
-    console.log("Number of lines to play:", lines.length)
+
+    // Combine all notes from all lines into a single sequence
+    let allNotes = []
+    Array.from(lines).forEach((line) => {
+      const notes = Array.from(line.children).slice(1) // Skip line number
+      allNotes = allNotes.concat(Array.from(notes))
+    })
 
     let currentTime = context.currentTime
-    const baseGain = 0.1
 
-    Array.from(lines).forEach((line) => {
-      const notes = Array.from(line.children).slice(1)
-      console.log("Number of notes in line:", notes.length)
+    // Play all notes in sequence without line breaks
+    allNotes.forEach((noteElement) => {
+      const backgroundColor = normalizeColor(noteElement.style.backgroundColor)
+      const colorToNote = Object.entries(colorMap).reduce(
+        (acc, [note, color]) => {
+          acc[normalizeColor(color)] = note
+          return acc
+        },
+        {}
+      )
 
-      notes.forEach((noteElement) => {
-        const backgroundColor = normalizeColor(
-          noteElement.style.backgroundColor
-        )
-        console.log("Normalized background color:", backgroundColor)
+      const noteKey = colorToNote[backgroundColor]
 
-        // Create a reverse mapping of normalized colors to notes
-        const colorToNote = Object.entries(colorMap).reduce(
-          (acc, [note, color]) => {
-            acc[normalizeColor(color)] = note
-            return acc
-          },
-          {}
-        )
+      if (noteKey && noteToFreq[noteKey] !== undefined) {
+        const width = parseFloat(getComputedStyle(noteElement).width)
+        const duration = width / 48
 
-        const noteKey = colorToNote[backgroundColor]
-        console.log("Found note:", noteKey, "for color:", backgroundColor)
-        console.log("Mapped note:", noteKey)
-
-        if (noteKey && noteToFreq[noteKey] !== undefined) {
-          const width = parseFloat(getComputedStyle(noteElement).width)
-          const duration = width / 48
-
-          if (noteKey !== "R") {
-            const oscillator = context.createOscillator()
-            const gainNode = context.createGain()
-
-            oscillator.type = "sine"
-            const frequency = noteToFreq[noteKey]
-            console.log(
-              `Playing note ${noteKey} at ${frequency}Hz for ${duration}s`
-            )
-
-            oscillator.frequency.value = frequency
-
-            gainNode.gain.setValueAtTime(0, currentTime)
-            gainNode.gain.linearRampToValueAtTime(baseGain, currentTime + 0.01)
-            gainNode.gain.linearRampToValueAtTime(
-              baseGain,
-              currentTime + duration - 0.01
-            )
-            gainNode.gain.linearRampToValueAtTime(0, currentTime + duration)
-
-            oscillator.connect(gainNode)
-            gainNode.connect(context.destination)
-
-            oscillator.start(currentTime)
-            oscillator.stop(currentTime + duration)
-          }
-
-          currentTime += duration
-        } else {
-          console.log("Could not map color to note:", backgroundColor)
+        if (noteKey !== "R") {
+          const frequency = noteToFreq[noteKey]
+          const sound = createSoundChain(
+            context,
+            frequency,
+            currentTime,
+            duration
+          )
+          sound.start()
         }
-      })
 
-      currentTime += 0.5
+        currentTime += duration
+      }
     })
   } catch (error) {
     console.error("Error playing music:", error)
     throw error
   }
 }
+
+// Sound chain function remains the same as in the previous response
+function createSoundChain(context, frequency, currentTime, duration) {
+  const mainOsc = context.createOscillator()
+  const subOsc = context.createOscillator()
+
+  mainOsc.type = "sawtooth" // 'sine', 'square + square = organ', 'sawtooth+trriangle=guitar', 'triangle'
+  mainOsc.frequency.value = frequency
+
+  subOsc.type = "triangle"
+  subOsc.frequency.value = frequency * 1.01
+
+  const mainGain = context.createGain()
+  const subGain = context.createGain()
+  const masterGain = context.createGain()
+
+  const convolver = context.createConvolver()
+  const reverbTime = 10
+  const rate = 44100
+  const length = rate * reverbTime
+  const impulse = context.createBuffer(2, length, rate)
+
+  for (let channel = 0; channel < 2; channel++) {
+    const impulseData = impulse.getChannelData(channel)
+    for (let i = 0; i < length; i++) {
+      impulseData[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, 10)
+    }
+  }
+  convolver.buffer = impulse
+
+  const filter = context.createBiquadFilter()
+  filter.type = "lowpass"
+  filter.frequency.value = 2000
+  filter.Q.value = 0.5
+
+  mainOsc.connect(mainGain)
+  subOsc.connect(subGain)
+
+  mainGain.connect(masterGain)
+  subGain.connect(masterGain)
+
+  masterGain.connect(filter)
+  filter.connect(convolver)
+  convolver.connect(context.destination)
+  filter.connect(context.destination)
+
+  const attackTime = 0.1
+  const releaseTime = 0.3
+
+  mainGain.gain.setValueAtTime(0, currentTime)
+  mainGain.gain.linearRampToValueAtTime(0.5, currentTime + attackTime)
+  mainGain.gain.setValueAtTime(0.5, currentTime + duration - releaseTime)
+  mainGain.gain.linearRampToValueAtTime(0, currentTime + duration)
+
+  subGain.gain.setValueAtTime(0, currentTime)
+  subGain.gain.linearRampToValueAtTime(0.15, currentTime + attackTime)
+  subGain.gain.setValueAtTime(0.15, currentTime + duration - releaseTime)
+  subGain.gain.linearRampToValueAtTime(0, currentTime + duration)
+
+  masterGain.gain.value = 0.3
+
+  return {
+    start: () => {
+      mainOsc.start(currentTime)
+      subOsc.start(currentTime)
+      mainOsc.stop(currentTime + duration)
+      subOsc.stop(currentTime + duration)
+    },
+  }
+}
+
+// async function playGeneratedArt() {
+//   try {
+//     const context = await initAudioContext()
+//     console.log("Starting playback with context state:", context.state)
+
+//     const visualResultNoNotes = document.getElementById("visualResultNoNotes")
+//     const lines = visualResultNoNotes.getElementsByClassName("line-container")
+//     console.log("Number of lines to play:", lines.length)
+
+//     let currentTime = context.currentTime
+//     const baseGain = 0.1
+
+//     Array.from(lines).forEach((line) => {
+//       const notes = Array.from(line.children).slice(1)
+//       console.log("Number of notes in line:", notes.length)
+
+//       notes.forEach((noteElement) => {
+//         const backgroundColor = normalizeColor(
+//           noteElement.style.backgroundColor
+//         )
+//         console.log("Normalized background color:", backgroundColor)
+
+//         // Create a reverse mapping of normalized colors to notes
+//         const colorToNote = Object.entries(colorMap).reduce(
+//           (acc, [note, color]) => {
+//             acc[normalizeColor(color)] = note
+//             return acc
+//           },
+//           {}
+//         )
+
+//         const noteKey = colorToNote[backgroundColor]
+//         console.log("Found note:", noteKey, "for color:", backgroundColor)
+//         console.log("Mapped note:", noteKey)
+
+//         if (noteKey && noteToFreq[noteKey] !== undefined) {
+//           const width = parseFloat(getComputedStyle(noteElement).width)
+//           const duration = width / 48
+
+//           if (noteKey !== "R") {
+//             const oscillator = context.createOscillator()
+//             const gainNode = context.createGain()
+
+//             oscillator.type = "sine"
+//             const frequency = noteToFreq[noteKey]
+//             console.log(
+//               `Playing note ${noteKey} at ${frequency}Hz for ${duration}s`
+//             )
+
+//             oscillator.frequency.value = frequency
+
+//             gainNode.gain.setValueAtTime(0, currentTime)
+//             gainNode.gain.linearRampToValueAtTime(baseGain, currentTime + 0.01)
+//             gainNode.gain.linearRampToValueAtTime(
+//               baseGain,
+//               currentTime + duration - 0.01
+//             )
+//             gainNode.gain.linearRampToValueAtTime(0, currentTime + duration)
+
+//             oscillator.connect(gainNode)
+//             gainNode.connect(context.destination)
+
+//             oscillator.start(currentTime)
+//             oscillator.stop(currentTime + duration)
+//           }
+
+//           currentTime += duration
+//         } else {
+//           console.log("Could not map color to note:", backgroundColor)
+//         }
+//       })
+
+//       currentTime += 0.5
+//     })
+//   } catch (error) {
+//     console.error("Error playing music:", error)
+//     throw error
+//   }
+// }
 
 function normalizeColor(color) {
   // Remove spaces and convert to lowercase
