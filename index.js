@@ -5,6 +5,7 @@ window.onload = function () {
   if (!inputText.value) {
     inputText.value = "{1}| "
   }
+  addPlayButton()
 }
 
 const colorMap = {
@@ -334,3 +335,228 @@ function editArtist() {
     }
   })
 }
+
+// Play music
+// Frequency mapping based on A440 (A4 = 440 Hz)
+const noteToFreq = {
+  // Lower octave (mm)
+  Cmm: 65.41, // C2
+  Dbmm: 69.3, // C#2/Db2
+  Dmm: 73.42,
+  Ebmm: 77.78,
+  Emm: 82.41,
+  Fmm: 87.31,
+  Fsmm: 92.5,
+  Gmm: 98.0,
+  Abmm: 103.83,
+  Amm: 110.0,
+  Bbmm: 116.54,
+  Bmm: 123.47,
+
+  // Middle-lower octave (m)
+  Cm: 130.81, // C3
+  Dbm: 138.59,
+  Dm: 146.83,
+  Ebm: 155.56,
+  Em: 164.81,
+  Fm: 174.61,
+  Fsm: 185.0,
+  Gm: 196.0,
+  Abm: 207.65,
+  Am: 220.0,
+  Bbm: 233.08,
+  Bm: 246.94,
+
+  // Middle octave
+  C: 261.63, // C4 (middle C)
+  Db: 277.18,
+  D: 293.66,
+  Eb: 311.13,
+  E: 329.63,
+  F: 349.23,
+  Fs: 369.99,
+  G: 392.0,
+  Ab: 415.3,
+  A: 440.0, // A4 (reference pitch)
+  Bb: 466.16,
+  B: 493.88,
+
+  // Higher octave (p)
+  Cp: 523.25, // C5
+  Dbp: 554.37,
+  Dp: 587.33,
+  Ebp: 622.25,
+  Ep: 659.25,
+  Fp: 698.46,
+  Fsp: 739.99,
+  Gp: 783.99,
+  Abp: 830.61,
+  Ap: 880.0,
+  Bbp: 932.33,
+  Bp: 987.77,
+
+  R: 0, // Rest
+}
+
+let audioContext = null
+
+async function initAudioContext() {
+  try {
+    if (!audioContext) {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)()
+      console.log("AudioContext created:", audioContext.state)
+    }
+    if (audioContext.state === "suspended") {
+      await audioContext.resume()
+      console.log("AudioContext resumed:", audioContext.state)
+    }
+    return audioContext
+  } catch (error) {
+    console.error("Error initializing AudioContext:", error)
+    throw error
+  }
+}
+
+async function playGeneratedArt() {
+  try {
+    const context = await initAudioContext()
+    console.log("Starting playback with context state:", context.state)
+
+    const visualResultNoNotes = document.getElementById("visualResultNoNotes")
+    const lines = visualResultNoNotes.getElementsByClassName("line-container")
+    console.log("Number of lines to play:", lines.length)
+
+    let currentTime = context.currentTime
+    const baseGain = 0.1
+
+    Array.from(lines).forEach((line) => {
+      const notes = Array.from(line.children).slice(1)
+      console.log("Number of notes in line:", notes.length)
+
+      notes.forEach((noteElement) => {
+        const backgroundColor = normalizeColor(
+          noteElement.style.backgroundColor
+        )
+        console.log("Normalized background color:", backgroundColor)
+
+        // Create a reverse mapping of normalized colors to notes
+        const colorToNote = Object.entries(colorMap).reduce(
+          (acc, [note, color]) => {
+            acc[normalizeColor(color)] = note
+            return acc
+          },
+          {}
+        )
+
+        const noteKey = colorToNote[backgroundColor]
+        console.log("Found note:", noteKey, "for color:", backgroundColor)
+        console.log("Mapped note:", noteKey)
+
+        if (noteKey && noteToFreq[noteKey] !== undefined) {
+          const width = parseFloat(getComputedStyle(noteElement).width)
+          const duration = width / 48
+
+          if (noteKey !== "R") {
+            const oscillator = context.createOscillator()
+            const gainNode = context.createGain()
+
+            oscillator.type = "sine"
+            const frequency = noteToFreq[noteKey]
+            console.log(
+              `Playing note ${noteKey} at ${frequency}Hz for ${duration}s`
+            )
+
+            oscillator.frequency.value = frequency
+
+            gainNode.gain.setValueAtTime(0, currentTime)
+            gainNode.gain.linearRampToValueAtTime(baseGain, currentTime + 0.01)
+            gainNode.gain.linearRampToValueAtTime(
+              baseGain,
+              currentTime + duration - 0.01
+            )
+            gainNode.gain.linearRampToValueAtTime(0, currentTime + duration)
+
+            oscillator.connect(gainNode)
+            gainNode.connect(context.destination)
+
+            oscillator.start(currentTime)
+            oscillator.stop(currentTime + duration)
+          }
+
+          currentTime += duration
+        } else {
+          console.log("Could not map color to note:", backgroundColor)
+        }
+      })
+
+      currentTime += 0.5
+    })
+  } catch (error) {
+    console.error("Error playing music:", error)
+    throw error
+  }
+}
+
+function normalizeColor(color) {
+  // Remove spaces and convert to lowercase
+  color = color.toLowerCase().replace(/\s/g, "")
+
+  // Handle rgb/rgba format
+  if (color.startsWith("rgb")) {
+    const values = color.match(/\d+/g)
+    if (values && values.length >= 3) {
+      const [r, g, b] = values
+      return `#${Number(r).toString(16).padStart(2, "0")}${Number(g)
+        .toString(16)
+        .padStart(2, "0")}${Number(b).toString(16).padStart(2, "0")}`
+    }
+  }
+
+  return color
+}
+
+function addPlayButton() {
+  const existingButton = document.getElementById("playMusicButton")
+  if (existingButton) {
+    existingButton.remove()
+  }
+
+  const button = document.createElement("button")
+  button.id = "playMusicButton"
+  button.className = "play-button"
+  button.textContent = "Play Music"
+
+  button.onclick = async () => {
+    try {
+      button.disabled = true
+      button.textContent = "Playing..."
+      console.log("Play button clicked")
+      await playGeneratedArt()
+    } catch (error) {
+      console.error("Error in play button click handler:", error)
+    } finally {
+      button.disabled = false
+      button.textContent = "Play Music"
+    }
+  }
+
+  // button.style.cssText = `
+  //       padding: 10px 20px;
+  //       background-color: #4CAF50;
+  //       color: white;
+  //       border: none;
+  //       border-radius: 4px;
+  //       cursor: pointer;
+  //       margin: 10px 0;
+  //   `
+
+  const clearNotes = document.getElementById("clearNotes")
+  clearNotes.parentNode.insertBefore(button, clearNotes)
+}
+
+// function stopPlaying() {
+//   if (window.audioContext) {
+//     window.audioContext.close()
+//     window.audioContext = null
+//   }
+// }

@@ -333,6 +333,48 @@ p {
     font-weight: lighter;
 }
 
+.play-button {
+    padding: 12px 24px;
+    font-size: 16px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.play-button:hover {
+    background-color: #45a049;
+}
+
+.play-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+/* .stop-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background-color: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.stop-button:hover {
+    background-color: #dc2626;
+}
+
+.stop-icon {
+    font-size: 12px;
+} */
+
 
 /* Add these media queries at the end of your CSS */
 @media screen and (max-width: 768px) {

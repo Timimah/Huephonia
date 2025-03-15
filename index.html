@@ -8,7 +8,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <title>HueGene</title>
-    <script src="index.js"></script>
 </head>
 
 <body>
@@ -64,13 +63,21 @@
     </div>
     <div class="button">
         <button onclick="downloadSVG()" style="background-color: #8a4af3;">Download SVG</button>
-        <button onclick="clearNotes()" style="background-color: #d9d9d9; color: black;">Clear Notes</button>
+        <button id="clearNotes" onclick="clearNotes()" style="background-color: #d9d9d9; color: black;">Clear
+            Notes</button>
+        <!-- <button  class="play-button" onclick="playSong()">Play Music</button> -->
+        <!-- <button id="stopButton" class="stop-button" onclick="stopPlaying()">
+            <span class="stop-icon">■</span>
+            Stop Music
+        </button> -->
         <div id="unmappedNotes"></div>
     </div>
     <div class="footer">
         <p>HueGene v 1.0 </p>
         <!-- <p>&copy; Enda Rae | HueGeen v 1.0 </p> -->
     </div>
+    <script src="index.js"></script>
+    <!-- <script src="http://unpkg.com/tone"></script> -->
 </body>
 
 </html>
