@@ -477,10 +477,10 @@ function createSoundChain(context, frequency, currentTime, duration) {
   const mainOsc = context.createOscillator()
   const subOsc = context.createOscillator()
 
-  mainOsc.type = "sawtooth" // 'sine', 'square + square = organ', 'sawtooth+trriangle=guitar', 'triangle'
+  mainOsc.type = "square" // 'sine', 'square + square = organ', 'sawtooth+trriangle=guitar', 'triangle'
   mainOsc.frequency.value = frequency
 
-  subOsc.type = "triangle"
+  subOsc.type = "square"
   subOsc.frequency.value = frequency * 1.01
 
   const mainGain = context.createGain()
@@ -488,7 +488,7 @@ function createSoundChain(context, frequency, currentTime, duration) {
   const masterGain = context.createGain()
 
   const convolver = context.createConvolver()
-  const reverbTime = 10
+  const reverbTime = 5
   const rate = 44100
   const length = rate * reverbTime
   const impulse = context.createBuffer(2, length, rate)
