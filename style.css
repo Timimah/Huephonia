@@ -353,27 +353,26 @@ p {
     cursor: not-allowed;
 }
 
-/* .stop-button {
+.instrument-controls {
     display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
-    background-color: #ef4444;
+    justify-content: center;
+    gap: 2em;
+    padding: 1em;
+}
+
+.instrument-button {
+    padding: 8px 16px;
+    background-color: #8a4af3;
+    ;
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.2s;
 }
 
-.stop-button:hover {
-    background-color: #dc2626;
+.instrument-button:hover {
+    background-color: #45a049;
 }
-
-.stop-icon {
-    font-size: 12px;
-} */
 
 
 /* Add these media queries at the end of your CSS */

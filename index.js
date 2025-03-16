@@ -398,150 +398,284 @@ const noteToFreq = {
   R: 0, // Rest
 }
 
-let audioContext = null
+// Add a global variable to track the current audio context and active oscillators
+let currentContext = null
+let activeOscillators = new Set()
+let isPlaying = false
 
+// Modify the initAudioContext function
 async function initAudioContext() {
   try {
-    if (!audioContext) {
-      audioContext = new (window.AudioContext || window.webkitAudioContext)()
-      console.log("AudioContext created:", audioContext.state)
+    if (!currentContext) {
+      currentContext = new (window.AudioContext || window.webkitAudioContext)()
     }
-    if (audioContext.state === "suspended") {
-      await audioContext.resume()
-      console.log("AudioContext resumed:", audioContext.state)
+    if (currentContext.state === "suspended") {
+      await currentContext.resume()
     }
-    return audioContext
+    return currentContext
   } catch (error) {
     console.error("Error initializing AudioContext:", error)
     throw error
   }
 }
 
-// Create effects chain for better sound
-async function playGeneratedArt() {
+// Add stop function
+function stopPlaying() {
+  if (currentContext) {
+    // Stop all active oscillators
+    activeOscillators.forEach((osc) => {
+      try {
+        osc.stop()
+        osc.disconnect()
+      } catch (e) {
+        console.log("Oscillator already stopped")
+      }
+    })
+    activeOscillators.clear()
+
+    // Close the current context
+    currentContext.close()
+    currentContext = null
+    isPlaying = false
+
+    // Update button states
+    updatePlayStopButtons()
+  }
+}
+
+// Instrument presets with safe values
+const instruments = {
+  piano: {
+    mainOscType: "sine",
+    subOscType: "triangle",
+    filterFreq: 2000,
+    attackTime: 0.1,
+    releaseTime: 0.3,
+    mainGainValue: 0.5,
+    subGainValue: 0.15,
+    reverbTime: 2,
+  },
+  guitar: {
+    mainOscType: "sawtooth",
+    subOscType: "triangle",
+    filterFreq: 1500,
+    attackTime: 0.05,
+    releaseTime: 0.1,
+    mainGainValue: 0.3,
+    subGainValue: 0.1,
+    reverbTime: 1.5,
+  },
+  organ: {
+    mainOscType: "square",
+    subOscType: "square",
+    filterFreq: 2500,
+    attackTime: 0.02,
+    releaseTime: 0.02,
+    mainGainValue: 0.2,
+    subGainValue: 0.1,
+    reverbTime: 1,
+  },
+}
+
+// Current instrument selection
+let currentInstrument = "piano"
+
+function createSoundChain(context, frequency, currentTime, duration) {
   try {
+    // Get instrument settings
+    const settings = instruments[currentInstrument]
+
+    // Safety checks
+    if (!context || !frequency || !currentTime || !duration) {
+      console.error("Missing required parameters")
+      return null
+    }
+
+    // Ensure duration is reasonable
+    duration = Math.min(Math.max(duration, 0.1), 10) // Between 0.1 and 10 seconds
+
+    // Create and configure oscillators
+    const mainOsc = context.createOscillator()
+    const subOsc = context.createOscillator()
+
+    // Add oscillators to tracking set
+    activeOscillators.add(mainOsc)
+    activeOscillators.add(subOsc)
+
+    mainOsc.type = settings.mainOscType
+    mainOsc.frequency.value = frequency
+
+    subOsc.type = settings.subOscType
+    subOsc.frequency.value = frequency * 1.01
+
+    // Create gain nodes
+    const mainGain = context.createGain()
+    const subGain = context.createGain()
+    const masterGain = context.createGain()
+
+    // Create reverb with safety limits
+    const convolver = context.createConvolver()
+    const rate = context.sampleRate
+    const length = Math.min(rate * settings.reverbTime, rate * 3) // Limit reverb length
+    const impulse = context.createBuffer(2, length, rate)
+
+    for (let channel = 0; channel < 2; channel++) {
+      const impulseData = impulse.getChannelData(channel)
+      for (let i = 0; i < length; i++) {
+        impulseData[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, 10)
+      }
+    }
+    convolver.buffer = impulse
+
+    // Configure filter
+    const filter = context.createBiquadFilter()
+    filter.type = "lowpass"
+    filter.frequency.value = Math.min(settings.filterFreq, 5000) // Safety limit
+    filter.Q.value = 0.5
+
+    // Connect audio nodes
+    mainOsc.connect(mainGain)
+    subOsc.connect(subGain)
+    mainGain.connect(masterGain)
+    subGain.connect(masterGain)
+    masterGain.connect(filter)
+    filter.connect(convolver)
+    convolver.connect(context.destination)
+    filter.connect(context.destination)
+
+    // Calculate safe envelope times
+    const attackTime = Math.min(settings.attackTime, duration * 0.3)
+    const releaseTime = Math.min(settings.releaseTime, duration * 0.3)
+
+    // Set volume envelopes with safety checks
+    const now = currentTime
+    mainGain.gain.setValueAtTime(0, now)
+    mainGain.gain.linearRampToValueAtTime(
+      settings.mainGainValue,
+      now + attackTime
+    )
+    mainGain.gain.setValueAtTime(
+      settings.mainGainValue,
+      now + duration - releaseTime
+    )
+    mainGain.gain.linearRampToValueAtTime(0, now + duration)
+
+    subGain.gain.setValueAtTime(0, now)
+    subGain.gain.linearRampToValueAtTime(
+      settings.subGainValue,
+      now + attackTime
+    )
+    subGain.gain.setValueAtTime(
+      settings.subGainValue,
+      now + duration - releaseTime
+    )
+    subGain.gain.linearRampToValueAtTime(0, now + duration)
+
+    masterGain.gain.value = 0.3
+
+    return {
+      start: () => {
+        try {
+          mainOsc.start(currentTime)
+          subOsc.start(currentTime)
+          mainOsc.stop(currentTime + duration)
+          subOsc.stop(currentTime + duration)
+
+          // Remove oscillators from tracking after they finish
+          setTimeout(() => {
+            activeOscillators.delete(mainOsc)
+            activeOscillators.delete(subOsc)
+          }, (duration + 0.1) * 1000)
+        } catch (error) {
+          console.error("Error starting oscillators:", error)
+        }
+      },
+    }
+  } catch (error) {
+    console.error("Error in createSoundChain:", error)
+    return null
+  }
+}
+
+// Function to safely change instrument
+function changeInstrument(instrumentName) {
+  if (instruments[instrumentName]) {
+    currentInstrument = instrumentName
+    console.log("Changed instrument to:", instrumentName)
+  } else {
+    console.error("Invalid instrument name")
+  }
+}
+
+// Modified playGeneratedArt function with error handling
+async function playGeneratedArt() {
+  if (isPlaying) {
+    console.log("Already playing")
+    return
+  }
+
+  try {
+    isPlaying = true
+    updatePlayStopButtons()
+
     const context = await initAudioContext()
-    console.log("Starting playback with context state:", context.state)
+    if (!context) {
+      throw new Error("Could not initialize audio context")
+    }
 
     const visualResultNoNotes = document.getElementById("visualResultNoNotes")
     const lines = visualResultNoNotes.getElementsByClassName("line-container")
 
-    // Combine all notes from all lines into a single sequence
     let allNotes = []
     Array.from(lines).forEach((line) => {
-      const notes = Array.from(line.children).slice(1) // Skip line number
+      const notes = Array.from(line.children).slice(1)
       allNotes = allNotes.concat(Array.from(notes))
     })
 
     let currentTime = context.currentTime
 
-    // Play all notes in sequence without line breaks
-    allNotes.forEach((noteElement) => {
-      const backgroundColor = normalizeColor(noteElement.style.backgroundColor)
-      const colorToNote = Object.entries(colorMap).reduce(
-        (acc, [note, color]) => {
-          acc[normalizeColor(color)] = note
-          return acc
-        },
-        {}
-      )
+    for (const noteElement of allNotes) {
+      try {
+        const backgroundColor = normalizeColor(
+          noteElement.style.backgroundColor
+        )
+        const colorToNote = Object.entries(colorMap).reduce(
+          (acc, [note, color]) => {
+            acc[normalizeColor(color)] = note
+            return acc
+          },
+          {}
+        )
 
-      const noteKey = colorToNote[backgroundColor]
+        const noteKey = colorToNote[backgroundColor]
 
-      if (noteKey && noteToFreq[noteKey] !== undefined) {
-        const width = parseFloat(getComputedStyle(noteElement).width)
-        const duration = width / 48
+        if (noteKey && noteToFreq[noteKey] !== undefined) {
+          const width = parseFloat(getComputedStyle(noteElement).width)
+          const duration = width / 48
 
-        if (noteKey !== "R") {
-          const frequency = noteToFreq[noteKey]
-          const sound = createSoundChain(
-            context,
-            frequency,
-            currentTime,
-            duration
-          )
-          sound.start()
+          if (noteKey !== "R") {
+            const frequency = noteToFreq[noteKey]
+            const sound = createSoundChain(
+              context,
+              frequency,
+              currentTime,
+              duration
+            )
+            if (sound) {
+              sound.start()
+            }
+          }
+
+          currentTime += duration
         }
-
-        currentTime += duration
+      } catch (error) {
+        console.error("Error processing note:", error)
+        continue // Skip problematic notes instead of crashing
       }
-    })
+    }
   } catch (error) {
     console.error("Error playing music:", error)
-    throw error
-  }
-}
-
-// Sound chain function remains the same as in the previous response
-function createSoundChain(context, frequency, currentTime, duration) {
-  const mainOsc = context.createOscillator()
-  const subOsc = context.createOscillator()
-
-  mainOsc.type = "sawtooth" // 'sine', 'square + square = organ', 'sawtooth+trriangle=guitar', 'triangle'
-  mainOsc.frequency.value = frequency
-
-  subOsc.type = "triangle"
-  subOsc.frequency.value = frequency * 1.01
-
-  const mainGain = context.createGain()
-  const subGain = context.createGain()
-  const masterGain = context.createGain()
-
-  const convolver = context.createConvolver()
-  const reverbTime = 2
-  const rate = 44100
-  const length = rate * reverbTime
-  const impulse = context.createBuffer(2, length, rate)
-
-  for (let channel = 0; channel < 2; channel++) {
-    const impulseData = impulse.getChannelData(channel)
-    for (let i = 0; i < length; i++) {
-      impulseData[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, 10)
-    }
-  }
-  convolver.buffer = impulse
-
-  const filter = context.createBiquadFilter()
-  filter.type = "lowpass"
-  filter.frequency.value = 1500
-  // filter.frequency.value = 2000
-  filter.Q.value = 0.5
-
-  mainOsc.connect(mainGain)
-  subOsc.connect(subGain)
-
-  mainGain.connect(masterGain)
-  subGain.connect(masterGain)
-
-  masterGain.connect(filter)
-  filter.connect(convolver)
-  convolver.connect(context.destination)
-  filter.connect(context.destination)
-
-  // const attackTime = 0.1
-  // const releaseTime = 0.3
-  attackTime = 0.05
-  releaseTime = 0.1
-
-  mainGain.gain.setValueAtTime(0, currentTime)
-  mainGain.gain.linearRampToValueAtTime(0.5, currentTime + attackTime)
-  mainGain.gain.setValueAtTime(0.5, currentTime + duration - releaseTime)
-  mainGain.gain.linearRampToValueAtTime(0, currentTime + duration)
-
-  subGain.gain.setValueAtTime(0, currentTime)
-  subGain.gain.linearRampToValueAtTime(0.15, currentTime + attackTime)
-  subGain.gain.setValueAtTime(0.15, currentTime + duration - releaseTime)
-  subGain.gain.linearRampToValueAtTime(0, currentTime + duration)
-
-  masterGain.gain.value = 0.3
-
-  return {
-    start: () => {
-      mainOsc.start(currentTime)
-      subOsc.start(currentTime)
-      mainOsc.stop(currentTime + duration)
-      subOsc.stop(currentTime + duration)
-    },
+    alert("There was an error playing the music. Please try again.")
   }
 }
 
@@ -643,48 +777,88 @@ function normalizeColor(color) {
   return color
 }
 
-function addPlayButton() {
-  const existingButton = document.getElementById("playMusicButton")
-  if (existingButton) {
-    existingButton.remove()
+function updatePlayStopButtons() {
+  const playButton = document.getElementById("playMusicButton")
+  const stopButton = document.getElementById("stopMusicButton")
+
+  if (playButton) {
+    playButton.disabled = isPlaying
+    playButton.style.cssText = `
+      padding: 10px 20px;
+      background-color: ${isPlaying ? "#ccc" : "#4CAF50"};
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: ${isPlaying ? "not-allowed" : "pointer"};
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background-color 0.3s;
+    `
   }
 
-  const button = document.createElement("button")
-  button.id = "playMusicButton"
-  button.className = "play-button"
-  button.textContent = "Play Music"
-
-  button.onclick = async () => {
-    try {
-      button.disabled = true
-      button.textContent = "Playing..."
-      console.log("Play button clicked")
-      await playGeneratedArt()
-    } catch (error) {
-      console.error("Error in play button click handler:", error)
-    } finally {
-      button.disabled = false
-      button.textContent = "Play Music"
-    }
+  if (stopButton) {
+    stopButton.disabled = !isPlaying
+    stopButton.style.cssText = `
+      padding: 10px 20px;
+      background-color: ${isPlaying ? "#f44336" : "#ccc"};
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: ${isPlaying ? "pointer" : "not-allowed"};
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background-color 0.3s;
+    `
   }
-
-  // button.style.cssText = `
-  //       padding: 10px 20px;
-  //       background-color: #4CAF50;
-  //       color: white;
-  //       border: none;
-  //       border-radius: 4px;
-  //       cursor: pointer;
-  //       margin: 10px 0;
-  //   `
-
-  const clearNotes = document.getElementById("clearNotes")
-  clearNotes.parentNode.insertBefore(button, clearNotes)
 }
 
-// function stopPlaying() {
-//   if (window.audioContext) {
-//     window.audioContext.close()
-//     window.audioContext = null
-//   }
-// }
+function addPlayButton() {
+  // Remove existing buttons if they exist
+  const existingPlayButton = document.getElementById("playMusicButton")
+  const existingStopButton = document.getElementById("stopMusicButton")
+  if (existingPlayButton) existingPlayButton.remove()
+  if (existingStopButton) existingStopButton.remove()
+
+  // Create container for buttons
+  const buttonContainer = document.createElement("div")
+  buttonContainer.style.cssText = `
+    display: flex;
+    gap: 10px;
+    margin: 10px 0;
+  `
+
+  // Create play button
+  const playButton = document.createElement("button")
+  playButton.id = "playMusicButton"
+  playButton.onclick = playGeneratedArt
+
+  // Add play icon
+  const playIcon = document.createElement("span")
+  playIcon.innerHTML = "▶"
+  playIcon.style.fontSize = "12px"
+  playButton.appendChild(playIcon)
+
+  // Create stop button
+  const stopButton = document.createElement("button")
+  stopButton.id = "stopMusicButton"
+  stopButton.onclick = stopPlaying
+
+  // Add stop icon
+  const stopIcon = document.createElement("span")
+  stopIcon.innerHTML = "■"
+  stopIcon.style.fontSize = "12px"
+  stopButton.appendChild(stopIcon)
+
+  // Add buttons to container
+  buttonContainer.appendChild(playButton)
+  buttonContainer.appendChild(stopButton)
+
+  // Add container to page
+  const piamoIns = document.getElementById("piamoIns")
+  piamoIns.parentNode.insertBefore(buttonContainer, piamoIns)
+
+  // Initial button states
+  updatePlayStopButtons()
+}
