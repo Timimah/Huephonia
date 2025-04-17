@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="scan.css">
+    <title>HueGene</title>
+</head>
+
+<body>
+    <div class="header">
+        <p><a href="index.html" target="_self" rel="noopener noreferrer"
+                style="text-decoration: none; color: #8a4af3;">HueGene</a></p>
+        <a href="scan.html" target="_blank" rel="noopener noreferrer">Scan to Play</a>
+    </div>
+    <div class="container" style="max-height: 100vh; overflow-y: scroll;">
+        <div class="controls">
+            <input type="file" id="imageInput" accept="image/*"
+                style="display: none; border: 0.2em solid black; border-radius: 2em;">
+            <button id="uploadButton">Upload Image</button>
+            <select id="algorithmSelect">
+                <option value="dominant">Dominant Colors</option>
+                <option value="kmeans">K-means Clustering</option>
+                <option value="medianCut">Median Cut</option>
+            </select>
+            <input type="number" id="colorCount" value="16" min="2" max="32" step="1">
+        </div>
+        <canvas id="imageCanvas"
+            style="border: 0.2em solid black; border-radius: 2em; height: 40em; overflow-y: scroll; object-fit: cover;"></canvas>
+        <div id="colorGrid"></div>
+    </div>
+    <div class="loading-overlay">
+        <div class="loading-spinner">Loading...</div>
+    </div>
+    <div class="footer">
+        <p>HueGene v 1.0 </p>
+        <!-- <p>&copy; Enda Rae | HueGeen v 1.0 </p> -->
+    </div>
+    <!-- <script src="index.js"></script> -->
+    <script src="combined.js"></script>
+
+</body>
+
+</html>
