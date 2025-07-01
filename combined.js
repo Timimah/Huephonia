@@ -755,6 +755,14 @@ if (document.getElementById("inputText")) {
     })
   }
 
+  function clearNotes() {
+    document.getElementById("inputText").value = "{1}| "
+    document.getElementById("visualResult").innerHTML = ""
+    document.getElementById("visualResultNoNotes").innerHTML = ""
+    document.getElementById("result").innerHTML = ""
+    console.log("Notes Cleared!")
+  }
+
   function editTitle() {
     const titleDisplay = document.getElementById("titleDisplay")
     const container = document.querySelector(".title-container")
@@ -1048,4 +1056,69 @@ function addPlayButton() {
 
   // Initial button states
   updatePlayStopButtons()
+}
+
+function downloadSVG() {
+  const visualResultNoNotes = document.getElementById("visualResultNoNotes")
+  const lines = visualResultNoNotes.getElementsByClassName("line-container")
+  const titleDisplay = document.getElementById("titleDisplay")
+  const artistDisplay = document.getElementById("artistDisplay")
+
+  let fileName =
+    titleDisplay.textContent.trim() + "_" + artistDisplay.textContent.trim()
+  if (fileName === "Untitled" || !fileName) {
+    fileName = "music_notation"
+  }
+  fileName = fileName.replace(/[^a-z0-9]/gi, "_").toLowerCase()
+
+  let maxWidth = 0
+  Array.from(lines).forEach((line) => {
+    // Skip the line-number div and only process note divs
+    const notes = Array.from(line.children).slice(1) // Skip first child (line number)
+    const lineWidth = notes.reduce((sum, note) => {
+      const computedStyle = window.getComputedStyle(note)
+      const width = parseFloat(computedStyle.width)
+      return sum + width
+    }, 0)
+    maxWidth = Math.max(maxWidth, lineWidth)
+  })
+
+  const height = lines.length * 60 // 48px height + 12px margin
+  const padding = 20 // Add padding to SVG
+  const totalWidth = maxWidth + padding * 2
+  const totalHeight = height + padding * 2
+
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${totalWidth}" height="${totalHeight}">`
+
+  // Add a background rectangle (optional)
+  svg += `<rect x="0" y="0" width="${totalWidth}" height="${totalHeight}" fill="white"/>`
+
+  Array.from(lines).forEach((line, lineIndex) => {
+    let xOffset = padding // Start after padding
+    // Skip the line-number div and only process note divs
+    const notes = Array.from(line.children).slice(1) // Skip first child (line number)
+    notes.forEach((note) => {
+      const computedStyle = window.getComputedStyle(note)
+      const width = parseFloat(computedStyle.width)
+      const y = lineIndex * 60 + padding // Add padding to y position
+      const color = note.style.backgroundColor
+
+      svg += `<rect x="${xOffset}" y="${y}" width="${width}" height="48" 
+                   fill="${color}" stroke="#353638" stroke-width="0.75"/>`
+
+      xOffset += width
+    })
+  })
+
+  svg += "</svg>"
+
+  const blob = new Blob([svg], { type: "image/svg+xml" })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement("a")
+  a.href = url
+  a.download = `${fileName}.svg`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
 }
